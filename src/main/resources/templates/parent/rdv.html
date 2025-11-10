@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rendez-vous - Mon Etab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .slide-in {
+            animation: slideIn 0.6s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        @media (min-width: 1024px) {
+            .main-content {
+                margin-left: 16rem;
+            }
+        }
+        .calendar-day {
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .calendar-day:hover {
+            background-color: #e0e7ff;
+        }
+        .calendar-day.selected {
+            background-color: #6366f1;
+            color: white;
+        }
+        .calendar-day.has-event {
+            position: relative;
+        }
+        .calendar-day.has-event::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background-color: #6366f1;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+<!-- Sidebar simplifié -->
+<div th:replace="~{parent/fragment :: sidebar(activePage='rdv')}"></div>
+
+<div class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" id="sidebar-overlay"></div>
+
+<div class="main-content min-h-screen">
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <button id="mobile-menu-button" class="lg:hidden mr-4 p-1 hover:bg-white hover:bg-opacity-20 rounded">
+                    <i data-lucide="menu" class="w-6 h-6 text-white"></i>
+                </button>
+                <div class="flex items-center space-x-4">
+                    <div class="glass-effect rounded-lg p-2">
+                        <i data-lucide="calendar" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">Mon Etab</h1>
+                        <p class="text-blue-100">Gestion des Rendez-vous</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <i data-lucide="bell" class="w-6 h-6 cursor-pointer"></i>
+                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">2</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">
+                                    <span>PK</span>
+                                </div>
+                                <div class="hidden md:block">
+                                    <p class="font-semibold">Parent KOUAKOU</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-6 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Calendrier -->
+            <div class="bg-white rounded-xl shadow-lg p-6 slide-in">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Septembre 2025</h2>
+
+                <div class="grid grid-cols-7 gap-1 mb-2">
+                    <div class="text-center text-sm font-medium text-gray-500 py-2">Dim</div>
+                    <div class="text-center text-sm font-medium text-gray-500 py-2">Lun</div>
+                    <div class="text-center text-sm font-medium text-gray-500 py-2">Mar</div>
+                    <div class="text-center text-sm font-medium text-gray-500 py-2">Mer</div>
+                    <div class="text-center text-sm font-medium text-gray-500 py-2">Jeu</div>
+                    <div class="text-center text-sm font-medium text-gray-500 py-2">Ven</div>
+                    <div class="text-center text-sm font-medium text-gray-500 py-2">Sam</div>
+                </div>
+
+                <div class="grid grid-cols-7 gap-1">
+                    <div class="calendar-day text-gray-300">1</div>
+                    <div class="calendar-day">2</div>
+                    <div class="calendar-day">3</div>
+                    <div class="calendar-day">4</div>
+                    <div class="calendar-day">5</div>
+                    <div class="calendar-day">6</div>
+                    <div class="calendar-day">7</div>
+
+                    <div class="calendar-day">8</div>
+                    <div class="calendar-day">9</div>
+                    <div class="calendar-day">10</div>
+                    <div class="calendar-day">11</div>
+                    <div class="calendar-day has-event">12</div>
+                    <div class="calendar-day">13</div>
+                    <div class="calendar-day">14</div>
+
+                    <div class="calendar-day">15</div>
+                    <div class="calendar-day">16</div>
+                    <div class="calendar-day">17</div>
+                    <div class="calendar-day">18</div>
+                    <div class="calendar-day">19</div>
+                    <div class="calendar-day">20</div>
+                    <div class="calendar-day">21</div>
+
+                    <div class="calendar-day">22</div>
+                    <div class="calendar-day">23</div>
+                    <div class="calendar-day">24</div>
+                    <div class="calendar-day">25</div>
+                    <div class="calendar-day">26</div>
+                    <div class="calendar-day">27</div>
+                    <div class="calendar-day">28</div>
+
+                    <div class="calendar-day">29</div>
+                    <div class="calendar-day">30</div>
+                    <div class="calendar-day text-gray-300">1</div>
+                    <div class="calendar-day text-gray-300">2</div>
+                    <div class="calendar-day text-gray-300">3</div>
+                    <div class="calendar-day text-gray-300">4</div>
+                    <div class="calendar-day text-gray-300">5</div>
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-gray-200">
+                    <h3 class="font-semibold text-gray-700 mb-3">Légende</h3>
+                    <div class="flex items-center space-x-2 mb-2">
+                        <div class="w-3 h-3 rounded-full bg-indigo-500"></div>
+                        <span class="text-sm text-gray-600">Rendez-vous programmé</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="text-sm text-gray-600">Créneaux disponibles</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rendez-vous programmés -->
+            <div class="bg-white rounded-xl shadow-lg p-6 slide-in">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Rendez-vous programmés</h2>
+
+                <div class="space-y-4">
+                    <!-- RDV 1 -->
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-indigo-600">1 Sept 2025 : 15h00</h3>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Confirmé</span>
+                        </div>
+                        <div class="mb-2">
+                            <p class="text-sm font-medium">Prof. Yao KOUASSI</p>
+                            <p class="text-sm text-gray-600">Mathématiques</p>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Motif: Suivi des résultats</span>
+                            <div class="flex space-x-2">
+                                <button class="p-1 text-blue-600 hover:text-blue-800">
+                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                </button>
+                                <button class="p-1 text-red-600 hover:text-red-800">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RDV 2 -->
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-indigo-600">12 Sept 2025 : 15h30</h3>
+                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">En attente</span>
+                        </div>
+                        <div class="mb-2">
+                            <p class="text-sm font-medium">Mme. DIABATE</p>
+                            <p class="text-sm text-gray-600">Français</p>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Motif: Orientation scolaire</span>
+                            <div class="flex space-x-2">
+                                <button class="p-1 text-blue-600 hover:text-blue-800">
+                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                </button>
+                                <button class="p-1 text-red-600 hover:text-red-800">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Créneaux disponibles -->
+                <div class="mt-6 pt-4 border-t border-gray-200">
+                    <h3 class="font-semibold text-gray-700 mb-3">Créneaux Disponibles</h3>
+
+                    <div class="mb-4">
+                        <h4 class="text-sm font-medium text-gray-600 mb-2">Cette semaine</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                <span class="text-sm">Lundi 2 Sept</span>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">12 créneaux</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                <span class="text-sm">Mardi 3 Sept</span>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">2 créneaux</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                <span class="text-sm">Jeudi 5 Sept</span>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">15 créneaux</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                <span class="text-sm">Vendredi 6 Sept</span>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">3 créneaux</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="show-form-btn" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center justify-center">
+                        <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                        Demander un rendez-vous
+                    </button>
+                </div>
+            </div>
+
+            <!-- Formulaire de demande de RDV -->
+            <div class="bg-white rounded-xl shadow-lg p-6 slide-in">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Nouveau Rendez-vous</h2>
+
+                <form id="rdv-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Enfant concerné</label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Sélectionner un enfant</option>
+                            <option value="marie">Marie KOUAKOU - Terminale C</option>
+                            <option value="jean">Jean KOUAKOU - Première</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Enseignant / Personnel</label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Sélectionner un contact</option>
+                            <option value="kouassi">Prof. Yao KOUASSI - Mathématiques</option>
+                            <option value="diabate">Mme. DIABATE - Français</option>
+                            <option value="assi">Mme. ASSI - Directeur</option>
+                            <option value="quattara">M. QUATTARA - Vie Scolaire</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Date souhaitée</label>
+                        <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Heure souhaitée</label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Sélectionner un créneau</option>
+                            <option value="9:00">9h00 - 9h30</option>
+                            <option value="9:30">9h30 - 10h00</option>
+                            <option value="10:00">10h00 - 10h30</option>
+                            <option value="10:30">10h30 - 11h00</option>
+                            <option value="11:00">11h00 - 11h30</option>
+                            <option value="11:30">11h30 - 12h00</option>
+                            <option value="14:00">14h00 - 14h30</option>
+                            <option value="14:30">14h30 - 15h00</option>
+                            <option value="15:00">15h00 - 15h30</option>
+                            <option value="15:30">15h30 - 16h00</option>
+                            <option value="16:00">16h00 - 16h30</option>
+                            <option value="16:30">16h30 - 17h00</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Motif du rendez-vous</label>
+                        <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Décrivez le motif de votre rendez-vous..."></textarea>
+                    </div>
+
+                    <div class="pt-4">
+                        <button type="submit" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium">
+                            Envoyer la demande
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                    <div class="flex items-start">
+                        <i data-lucide="info" class="w-5 h-5 text-blue-600 mr-2 mt-0.5"></i>
+                        <div>
+                            <p class="text-sm text-blue-800">
+                                <strong>Information:</strong> Votre demande sera traitée dans les 48h. Vous recevrez une confirmation par email une fois le rendez-vous validé.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const mainContent = document.querySelector('.main-content');
+
+    mobileMenuButton.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+    });
+
+    // Gestion de la sélection des jours du calendrier
+    const calendarDays = document.querySelectorAll('.calendar-day:not(.text-gray-300)');
+    calendarDays.forEach(day => {
+        day.addEventListener('click', () => {
+            calendarDays.forEach(d => d.classList.remove('selected'));
+            day.classList.add('selected');
+
+            // Ici on pourrait charger les créneaux disponibles pour la date sélectionnée
+        });
+    });
+
+    // Soumission du formulaire
+    document.getElementById('rdv-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        alert('Votre demande de rendez-vous a été envoyée avec succès!');
+        this.reset();
+    });
+</script>
+</body>
+</html>

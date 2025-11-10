@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Dirigeants - Mon Etab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #a9121a 0%, #d48d22 100%);
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        @media (min-width: 1024px) {
+            .main-content {
+                margin-left: 16rem; /* Tailwind w-64 */
+            }
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .slide-in {
+            animation: slideIn 0.6s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+<div th:replace="~{admin/fragment :: sidebar(activePage='dashboard')}"></div>
+<div id="sidebar-overlay" class="fixed inset-0 bg-black opacity-50 z-30 hidden lg:hidden"></div>
+
+<div class="main-content min-h-screen">
+
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center">
+                <button id="mobile-menu-button" class="lg:hidden mr-4 p-1 hover:bg-white hover:bg-opacity-20 rounded">
+                    <i data-lucide="menu" class="w-6 h-6 text-white"></i>
+                </button>
+                <div class="flex items-center space-x-4">
+                    <div class="rounded-lg p-2">
+                        <span class="text-2xl font-bold uppercase">Dirigeants</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2 text-white">
+                    <div class="text-right hidden sm:block">
+                        <p class="font-semibold" th:text="'Bonjour, ' + ${admin.prenom + ' ' + admin.nom}">Bonjour, Dr. Adjoumane KOFFI</p>
+                        <p class="text-sm font-light">Administrateur</p>
+                    </div>
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-red-700 font-bold border-2 border-white">
+                        <span th:text="${#strings.substring(admin.prenom,0,1) + #strings.substring(admin.nom,0,1)}">AK</span>
+                    </div>
+                </div>
+                <img src="https://i.imgur.com/r6w5g3x.png" alt="Logo MonEtab" class="h-10 hidden sm:block">
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto p-6 lg:p-10">
+
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">Tableau de Bord Administratif</h2>
+                <div class="flex space-x-2 text-sm text-gray-600">
+                    <span class="px-3 py-1 bg-gray-200 rounded-full cursor-pointer">Période:</span>
+                    <span class="px-3 py-1 bg-gray-200 rounded-full cursor-pointer">Semaine</span>
+                    <span class="px-3 py-1 bg-gray-200 rounded-full cursor-pointer">Mois</span>
+                    <span class="px-3 py-1 bg-gray-200 rounded-full cursor-pointer">Trimestre</span>
+                    <span class="px-3 py-1 bg-red-100 text-red-700 font-bold rounded-full cursor-pointer">Année</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8 slide-in">
+                <div class="bg-gray-50 rounded-lg p-4 shadow-sm flex flex-col items-center text-center card-hover">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 mb-2">
+                        <i data-lucide="users" class="w-6 h-6"></i>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-2">Élèves</p>
+                    <p class="text-3xl font-bold text-red-700" th:text="${nombreEleves}">0</p>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-4 shadow-sm flex flex-col items-center text-center card-hover">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-green-100 text-green-600 mb-2">
+                        <i data-lucide="user-check" class="w-6 h-6"></i>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-2">Enseignants</p>
+                    <p class="text-3xl font-bold text-red-700" th:text="${nombreTeachers}">0</p>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-4 shadow-sm flex flex-col items-center text-center card-hover">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-purple-100 text-purple-600 mb-2">
+                        <i data-lucide="clock" class="w-6 h-6"></i>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-2">Heures de cours</p>
+                    <p class="text-3xl font-bold text-red-700" th:text="${nombreHeuresCours}">0</p>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-4 shadow-sm flex flex-col items-center text-center card-hover">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-orange-100 text-orange-600 mb-2">
+                        <i data-lucide="book-open" class="w-6 h-6"></i>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-2">Classes</p>
+                    <p class="text-3xl font-bold text-red-700" th:text="${nombreClasses}">0</p>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-4 shadow-sm flex flex-col items-center text-center card-hover">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-indigo-100 text-indigo-600 mb-2">
+                        <i data-lucide="book" class="w-6 h-6"></i>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-2">Matières</p>
+                    <p class="text-3xl font-bold text-red-700" th:text="${nombreMatieres}">0</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2 bg-gray-50 rounded-xl p-6 shadow-sm slide-in">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-gray-800">Répartition des élèves par classe</h3>
+                    </div>
+
+                    <!-- Message si pas de données -->
+                    <div th:if="${repartitionEleves == null or repartitionEleves.isEmpty()}" class="text-center py-8">
+                        <i data-lucide="users" class="w-12 h-12 text-gray-400 mx-auto mb-4"></i>
+                        <p class="text-gray-500">Aucune donnée de répartition disponible</p>
+                    </div>
+
+                    <!-- Graphique -->
+                    <div th:unless="${repartitionEleves == null or repartitionEleves.isEmpty()}">
+                        <canvas id="studentsChart" class="w-full" height="250"></canvas>
+                    </div>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-6 shadow-sm slide-in">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Statistiques récentes</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Nouvelles inscriptions ce mois</span>
+                            <span class="text-sm font-medium text-green-600">+12</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Cours programmés cette semaine</span>
+                            <span class="text-sm font-medium text-blue-600">45</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Absences ce mois</span>
+                            <span class="text-sm font-medium text-red-600">8</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Taux de présence global</span>
+                            <span class="text-sm font-medium text-green-600">94.5%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 slide-in">
+                <div class="bg-gray-50 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Prochains événements</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
+                            <div>
+                                <p class="font-medium">Réunion des enseignants</p>
+                                <p class="text-sm text-gray-500">15 Sept, 10:00</p>
+                            </div>
+                            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Réunion</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
+                            <div>
+                                <p class="font-medium">Conseil de classe</p>
+                                <p class="text-sm text-gray-500">20 Sept, 14:00</p>
+                            </div>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Pédagogie</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Actions rapides</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <a href="#" class="p-3 bg-white rounded-lg shadow-sm text-center hover:bg-gray-100 transition-colors">
+                            <i data-lucide="user-plus" class="w-6 h-6 mx-auto text-blue-600 mb-1"></i>
+                            <p class="text-sm font-medium">Nouvel élève</p>
+                        </a>
+                        <a href="#" class="p-3 bg-white rounded-lg shadow-sm text-center hover:bg-gray-100 transition-colors">
+                            <i data-lucide="calendar" class="w-6 h-6 mx-auto text-green-600 mb-1"></i>
+                            <p class="text-sm font-medium">Emploi du temps</p>
+                        </a>
+                        <a href="#" class="p-3 bg-white rounded-lg shadow-sm text-center hover:bg-gray-100 transition-colors">
+                            <i data-lucide="clipboard-list" class="w-6 h-6 mx-auto text-purple-600 mb-1"></i>
+                            <p class="text-sm font-medium">Notes</p>
+                        </a>
+                        <a href="#" class="p-3 bg-white rounded-lg shadow-sm text-center hover:bg-gray-100 transition-colors">
+                            <i data-lucide="bar-chart-3" class="w-6 h-6 mx-auto text-orange-600 mb-1"></i>
+                            <p class="text-sm font-medium">Statistiques</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener('DOMContentLoaded', function() {
+        // Récupération des données depuis Thymeleaf
+        const repartitionData = /*[[${repartitionEleves}]]*/ {};
+
+        // Vérifier si des données existent
+        if (Object.keys(repartitionData).length > 0) {
+            // Préparation des données pour le graphique
+            const classLabels = Object.keys(repartitionData);
+            const classValues = Object.values(repartitionData);
+
+            // Couleurs pour le graphique
+            const backgroundColors = [
+                '#a9121a', '#d48d22', '#2e86de', '#10ac84',
+                '#ee5253', '#0abde3', '#ff9f43', '#54a0ff',
+                '#5f27cd', '#00d2d3', '#ff6b6b', '#48dbfb',
+                '#1dd1a1', '#f368e0', '#ff9ff3', '#feca57'
+            ];
+
+            // Configuration du graphique
+            const ctx = document.getElementById('studentsChart').getContext('2d');
+            const studentsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: classLabels,
+                    datasets: [{
+                        label: 'Nombre d\'élèves',
+                        data: classValues,
+                        backgroundColor: backgroundColors.slice(0, classLabels.length),
+                        borderRadius: 6,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: {
+                                size: 14
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    return `Élèves: ${context.parsed.y}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                },
+                                stepSize: 1
+                            },
+                            title: {
+                                display: true,
+                                text: 'Nombre d\'élèves',
+                                font: {
+                                    size: 13,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+    /*]]>*/
+</script>
+<script>
+    lucide.createIcons();
+
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const closeSidebarButton = document.getElementById('close-sidebar-button');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    mobileMenuButton.addEventListener('click', () => {
+        sidebar.classList.remove('-translate-x-full');
+        overlay.classList.remove('hidden');
+    });
+
+    closeSidebarButton.addEventListener('click', () => {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+    });
+
+    // Chart.js Configuration pour la répartition des élèves
+    const ctx = document.getElementById('studentsChart').getContext('2d');
+    const studentsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['6ème', '5ème', '4ème', '3ème', '2nde', '1ère', 'Tle'],
+            datasets: [{
+                label: 'Nombre d\'élèves',
+                data: [120, 115, 110, 105, 95, 90, 85],
+                backgroundColor: '#a9121a',
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>

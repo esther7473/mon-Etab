@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div th:fragment="sidebar(activePage)" class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+    <div class="flex flex-col h-full">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-red-700 to-red-900 rounded-lg flex items-center justify-center">
+                    <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-gray-800">Mon Etab</h2>
+                    <p class="text-sm text-gray-500">Espace Dirigeant</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-1 p-4 space-y-2">
+            <a th:href="@{/admin/}"
+               th:classappend="${activePage == 'dashboard'} ? 'text-white bg-gradient-to-r from-red-700 to-red-900' : 'text-gray-700 hover:text-red-600 hover:bg-red-50'"
+               class="flex items-center space-x-3 rounded-lg px-4 py-3 transition-all duration-200">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <span>Tableau de Bord</span>
+            </a>
+
+            <a th:href="@{/admin/eleves}"
+               th:classappend="${activePage == 'eleves'} ? 'text-white bg-gradient-to-r from-orange-500 to-amber-600' : 'text-gray-700 hover:text-orange-600 hover:bg-orange-50'"
+               class="flex items-center space-x-3 rounded-lg px-4 py-3 transition-all duration-200">
+                <i data-lucide="users" class="w-5 h-5"></i>
+                <span>Élèves</span>
+            </a>
+
+            <a th:href="@{/admin/enseignants}"
+               th:classappend="${activePage == 'enseignants'} ? 'text-white bg-gradient-to-r from-blue-500 to-purple-600' : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50'"
+               class="flex items-center space-x-3 rounded-lg px-4 py-3 transition-all duration-200">
+                <i data-lucide="briefcase" class="w-5 h-5"></i>
+                <span>Enseignants</span>
+            </a>
+
+            <a th:href="@{/admin/matieres}"
+               th:classappend="${activePage == 'matieres'} ? 'text-white bg-gradient-to-r from-indigo-500 to-blue-600' : 'text-gray-700 hover:text-indigo-600 hover:bg-indigo-50'"
+               class="flex items-center space-x-3 rounded-lg px-4 py-3 transition-all duration-200">
+                <i data-lucide="book" class="w-5 h-5"></i>
+                <span>Matières</span>
+            </a>
+
+            <a th:href="@{/admin/classes}"
+               th:classappend="${activePage == 'classes'} ? 'text-white bg-gradient-to-r from-green-500 to-teal-600' : 'text-gray-700 hover:text-green-600 hover:bg-green-50'"
+               class="flex items-center space-x-3 rounded-lg px-4 py-3 transition-all duration-200">
+                <i data-lucide="school" class="w-5 h-5"></i>
+                <span>Classes</span>
+            </a>
+
+            <div class="border-t border-gray-200 my-4"></div>
+
+            <div class="px-2 mb-2">
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Paramètres</p>
+            </div>
+
+            <!--a href="#"
+               th:classappend="${activePage == 'profil'} ? 'text-white bg-gradient-to-r from-gray-500 to-gray-600' : 'text-gray-700 hover:text-gray-600 hover:bg-gray-50'"
+               class="flex items-center space-x-3 rounded-lg px-4 py-3 transition-all duration-200">
+                <i data-lucide="user" class="w-5 h-5"></i>
+                <span>Mon profil</span>
+            </a>
+            
+            <a th:href="@{/admin/parametres}"
+               th:classappend="${activePage == 'parametres'} ? 'text-white bg-gradient-to-r from-indigo-500 to-blue-600' : 'text-gray-700 hover:text-indigo-600 hover:bg-indigo-50'"
+               class="flex items-center space-x-3 rounded-lg px-4 py-3 transition-all duration-200">
+                <i data-lucide="settings" class="w-5 h-5"></i>
+                <span>Paramètres</span>
+            </a-->
+
+            <a th:href="@{/logout}"
+               class="flex items-center space-x-3 text-red-600 hover:bg-red-50 rounded-lg px-4 py-3 transition-all duration-200">
+                <i data-lucide="log-out" class="w-5 h-5"></i>
+                <span>Déconnexion</span>
+            </a>
+        </nav>
+    </div>
+</div>
+</body>
+</html>

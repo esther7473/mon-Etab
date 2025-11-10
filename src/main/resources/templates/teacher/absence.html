@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pointage des Absences - Mon Etab (Enseignant)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <style>
+        .gradient-bg-enseignant {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .slide-in {
+            animation: slideIn 0.6s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .main-content { margin-left: 0; }
+        @media (min-width: 1024px) {
+            .main-content { margin-left: 16rem; }
+        }
+        .absence-checkbox:checked + .checkmark {
+            background-color: #ef4444;
+            border-color: #ef4444;
+        }
+        .absence-checkbox:checked + .checkmark svg { display: block; }
+        .justified-checkbox:checked + .checkmark {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+<div th:replace="~{teacher/fragment :: sidebar(activePage='absences')}"></div>
+<div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+<div class="main-content min-h-screen">
+    <!-- HEADER -->
+    <header class="gradient-bg-enseignant text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <button id="mobile-menu-button" class="lg:hidden mr-4 p-1 hover:bg-white hover:bg-opacity-20 rounded">
+                    <i data-lucide="menu" class="w-6 h-6 text-white"></i>
+                </button>
+                <div class="flex items-center space-x-4">
+                    <div class="glass-effect rounded-lg p-2">
+                        <i data-lucide="user-x" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">Pointage des Absences</h1>
+                        <p class="text-green-100">Enseignant</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white font-bold">
+                            <span th:text="${teacher.prenom!= null ? #strings.substring(teacher.prenom, 0, 1):'X'} +' '+ ${teacher.nom!= null ? #strings.substring(teacher.nom, 0, 1):'X'}">YK</span>
+
+                        </div>
+                        <div class="hidden md:block">
+                            <p class="font-semibold">
+                                Bonjour, <span th:text="${teacher.prenom + ' ' + teacher.nom}"></span>
+                                - <span th:text="${teacher.matiere.nom}"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- FILTRES -->
+    <div class="container mx-auto px-6 py-8">
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 slide-in">
+            <form th:action="@{/teacher/absences}" method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="classe" class="block text-gray-700 text-sm font-medium mb-1">Classe</label>
+                    <select id="classe" name="classeId" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-400">
+                        <option value="">Sélectionner une classe</option>
+                        <option th:each="classe : ${classes}"
+                                th:value="${classe.id}"
+                                th:text="${classe.label}"
+                               >
+                        </option>
+                    </select>
+                </div>
+                <div>
+                    <label for="cours" class="block text-gray-700 text-sm font-medium mb-1">Cours</label>
+                    <select id="cours" name="coursId" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-400">
+                        <option value="">Sélectionner un cours</option>
+                        <option th:each="cours : ${coursList}"
+                                th:value="${cours.id}"
+                                th:text="${#temporals.format(cours.dateCours, 'dd/MM/yyyy HH:mm')}"
+                                >
+                        </option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 w-full">Charger</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- STATS -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <p class="text-gray-500 text-sm">Élèves total</p>
+                <p class="text-3xl font-bold text-green-600" th:text="${totalStudents}">0</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <p class="text-gray-500 text-sm">Présents</p>
+                <p class="text-3xl font-bold text-green-600" th:text="${presents}">0</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <p class="text-gray-500 text-sm">Absents</p>
+                <p class="text-3xl font-bold text-red-600" th:text="${absents}">0</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <p class="text-gray-500 text-sm">Taux présence</p>
+                <p class="text-3xl font-bold text-purple-600" th:text="${tauxPresence + '%'}">0%</p>
+            </div>
+        </div>
+
+        <!-- TABLEAU ABSENCES -->
+        <div th:if="${selectedClasse != null and selectedCours != null}" class="bg-white rounded-xl shadow-lg p-6 slide-in">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800">
+                    <i data-lucide="users" class="w-5 h-5 mr-2 text-green-600"></i>
+                    Pointage - <span th:text="${selectedClasse.label}"></span> -
+                    <span th:text="${teacher.matiere.nom + ' - ' + #temporals.format(selectedCours.dateCours, 'dd/MM/yyyy HH:mm')}"></span>
+                </h2>
+                <div class="text-sm text-gray-600">
+                    <span th:text="'Séance du ' + ${#temporals.format(selectedCours.dateCours, 'dd/MM/yyyy')}"></span>
+                </div>
+            </div>
+
+            <form th:action="@{/teacher/absences/save}" method="post">
+                <input type="hidden" name="coursId" th:value="${selectedCours.id}" />
+                <input type="hidden" name="classeId" th:value="${selectedClasse.id}" />
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Élève</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Présent</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Justifié</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Motif</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Type</th>
+                        </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tr th:each="student : ${students}">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold text-sm"
+                                         th:text="${#strings.substring(student.prenom,0,1) + #strings.substring(student.nom,0,1)}"></div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium" th:text="${student.prenom + ' ' + student.nom}"></div>
+                                        <div class="text-sm text-gray-500" th:text="'ID: ' + ${student.matricule}"></div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Présence -->
+                            <td class="px-6 py-4 text-center">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="present" th:value="${student.id}"
+                                           th:checked="${absencesMap != null and !absencesMap.containsKey(student.id)}"
+                                           class="sr-only absence-checkbox" data-student-id="${student.id}"/>
+                                    <span class="checkmark w-6 h-6 border-2 border-gray-300 rounded-md flex items-center justify-center">
+                                        <i data-lucide="check" class="w-4 h-4 text-white hidden"></i>
+                                    </span>
+                                </label>
+                            </td>
+
+                            <!-- Justification -->
+                            <td class="px-6 py-4 text-center">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" th:name="'justifiee[' + ${student.id} + ']'" value="true"
+                                           th:disabled="${absencesMap == null or !absencesMap.containsKey(student.id)}"
+                                           th:checked="${absencesMap != null and absencesMap.containsKey(student.id) and absencesMap.get(student.id).justifiee}"
+                                           class="sr-only justified-checkbox" data-student-id="${student.id}"/>
+                                    <span class="checkmark w-6 h-6 border-2 border-gray-300 rounded-md flex items-center justify-center">
+                                        <i data-lucide="check" class="w-4 h-4 text-white hidden"></i>
+                                    </span>
+                                </label>
+                            </td>
+
+                            <!-- Motif -->
+                            <td class="px-6 py-4">
+                                <input type="text" th:name="'motif[' + ${student.id} + ']'"
+                                       th:value="${absencesMap != null && absencesMap.containsKey(student.id) ? absencesMap.get(student.id).motif : ''}"
+                                       th:disabled="${absencesMap == null or !absencesMap.containsKey(student.id)}"
+                                       placeholder="Motif d'absence..."
+                                       class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-400"/>
+                            </td>
+
+                            <!-- Type -->
+                            <td class="px-6 py-4 text-center">
+                                <select th:name="'typeAbsence[' + ${student.id} + ']'"
+                                        th:disabled="${absencesMap == null or !absencesMap.containsKey(student.id)}"
+                                        class="px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-400">
+                                    <option th:each="type : ${T(ci.ada.monetabv2.models.Enum.TypeAbsence).values()}"
+                                            th:value="${type}"
+                                            th:text="${type}"
+                                            th:selected="${absencesMap != null and absencesMap.containsKey(student.id) and absencesMap.get(student.id).typeAbsence == type}">
+                                    </option>
+                                </select>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-8 flex justify-end space-x-4">
+                    <button type="submit" class="px-6 py-3 rounded-full text-white bg-green-600 hover:bg-green-700">
+                        <i data-lucide="save" class="w-5 h-5 mr-2"></i> Enregistrer
+                    </button>
+                    <a th:href="@{/teacher/absences/print(classeId=${selectedClasse.id}, coursId=${selectedCours.id})}"
+                       class="px-6 py-3 rounded-full text-gray-700 bg-white border hover:bg-gray-50">
+                        <i data-lucide="printer" class="w-5 h-5 mr-2"></i> Imprimer
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Message si rien sélectionné -->
+        <div th:if="${selectedClasse == null or selectedCours == null}" class="bg-white rounded-xl shadow-lg p-6 text-center">
+            <i data-lucide="users" class="w-16 h-16 text-gray-400 mx-auto mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-700 mb-2">Sélectionnez une classe et un cours</h3>
+            <p class="text-gray-500">Veuillez choisir une classe et un cours pour commencer le pointage des absences.</p>
+        </div>
+    </div>
+</div>
+
+<!-- SCRIPT -->
+<script>
+    lucide.createIcons();
+
+    // Gestion du menu mobile
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    mobileMenuButton.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    });
+    overlay.addEventListener('click', () => {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+    });
+
+    // Gestion dynamique des absences
+    document.querySelectorAll('.absence-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function () {
+            const studentId = this.dataset.studentId;
+            const justified = document.querySelector(`.justified-checkbox[data-student-id="${studentId}"]`);
+            const motif = document.querySelector(`input[name="motif_${studentId}"]`);
+            const type = document.querySelector(`select[name="typeAbsence_${studentId}"]`);
+
+            if (this.checked) {
+                // Présent
+                if (justified) justified.disabled = true;
+                if (motif) motif.disabled = true;
+                if (type) type.disabled = true;
+            } else {
+                // Absent
+                if (justified) justified.disabled = false;
+                if (motif) motif.disabled = false;
+                if (type) type.disabled = false;
+            }
+        });
+    });
+</script>
+</body>
+</html>

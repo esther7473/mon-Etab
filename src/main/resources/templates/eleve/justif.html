@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Justifier une absence - Mon Etab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .slide-in {
+            animation: slideIn 0.6s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        @media (min-width: 1024px) {
+            .main-content {
+                margin-left: 16rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+<div th:replace="~{eleve/fragments :: sidebar(activePage='absences')}"></div>
+
+<div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+<div class="main-content min-h-screen">
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <button id="mobile-menu-button" class="lg:hidden mr-4 p-1 hover:bg-white hover:bg-opacity-20 rounded">
+                    <i data-lucide="menu" class="w-6 h-6 text-white"></i>
+                </button>
+                <div class="flex items-center space-x-4">
+                    <div class="glass-effect rounded-lg p-2">
+                        <i data-lucide="file-check" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">Justifier une absence</h1>
+                        <p class="text-blue-100">Soumettre un justificatif</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">
+                            <span>JD</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-6 py-8">
+        <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-8 slide-in">
+            <p class="text-gray-600 mb-6">Utilisez ce formulaire pour joindre un document officiel et justifier une absence ou un retard non justifié. Votre enseignant ou l'administration validera le justificatif.</p>
+
+            <form action="#" method="post" enctype="multipart/form-data">
+                <div class="mb-6">
+                    <label for="absenceId" class="block text-gray-700 font-medium mb-2">Sélectionner l'absence à justifier :</label>
+                    <select id="absenceId" name="absenceId" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition duration-200">
+                        <option value="">-- Choisir une absence --</option>
+                        <option value="1">25/08/2025 - Mathématiques (ABSENCE)</option>
+                        <option value="2">26/08/2025 - Physique-Chimie (RETARD)</option>
+                        <option value="3">28/08/2025 - Histoire-Géographie (ABSENCE)</option>
+                    </select>
+                    <p class="mt-2 text-sm text-gray-500">Seules les absences non justifiées sont listées ici.</p>
+                </div>
+
+                <div class="mb-6">
+                    <label for="motif" class="block text-gray-700 font-medium mb-2">Motif de l'absence :</label>
+                    <textarea id="motif" name="motif" rows="4" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition duration-200" placeholder="Ex: Rendez-vous médical, maladie, etc."></textarea>
+                </div>
+
+                <div class="mb-6">
+                    <label for="justificatif" class="block text-gray-700 font-medium mb-2">Joindre le justificatif :</label>
+                    <div class="flex items-center space-x-4">
+                        <input id="justificatif" name="justificatif" type="file" required class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100 transition duration-200"/>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500">Formats acceptés : PDF, PNG, JPG. Taille maximale : 5 Mo.</p>
+                </div>
+
+                <div class="flex items-center justify-end">
+                    <button type="submit" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
+                        <i data-lucide="send" class="w-5 h-5 mr-2"></i>
+                        Soumettre le justificatif
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    mobileMenuButton.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Devoirs - Mon Etab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .slide-in {
+            animation: slideIn 0.6s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        @media (min-width: 1024px) {
+            .main-content {
+                margin-left: 16rem;
+            }
+        }
+        /* Styles spécifiques aux devoirs */
+        .devoir-card-pending { border-left-color: #f59e0b; }
+        .devoir-card-late { border-left-color: #ef4444; }
+        .devoir-card-done { border-left-color: #10b981; }
+    </style>
+</head>
+<body class="bg-gray-50">
+<div th:replace="~{eleve/fragments :: sidebar(activePage='devoirs')}"></div>
+
+<div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+<div class="main-content min-h-screen">
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <button id="mobile-menu-button" class="lg:hidden mr-4 p-1 hover:bg-white hover:bg-opacity-20 rounded">
+                    <i data-lucide="menu" class="w-6 h-6 text-white"></i>
+                </button>
+
+                <div class="d-flex align-items-center">
+                    <img alt="Photo de profil" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                    <div>
+                        <p class="mb-0 fw-bold" ></p>
+                        <small class="text-muted">Élève</small>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">
+                        <span class="initials" ></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-6 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="bg-white rounded-xl shadow-lg p-6 slide-in card-hover flex items-center space-x-4">
+                <div class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                    <i data-lucide="bell" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-sm">Devoirs à venir</p>
+                    <p class="text-2xl font-bold text-gray-800" >3</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 slide-in card-hover flex items-center space-x-4">
+                <div class="w-12 h-12 flex items-center justify-center rounded-full bg-red-100 text-red-600">
+                    <i data-lucide="clock" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-sm">Devoirs en retard</p>
+                    <p class="text-2xl font-bold text-gray-800" >1</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 slide-in card-hover flex items-center space-x-4">
+                <div class="w-12 h-12 flex items-center justify-center rounded-full bg-green-100 text-green-600">
+                    <i data-lucide="check-circle" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-sm">Devoirs rendus</p>
+                    <p class="text-2xl font-bold text-gray-800" >8</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6 slide-in">
+            <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+                <h2 class="text-2xl font-bold text-gray-800">Liste des devoirs</h2>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="filter" class="w-5 h-5 text-gray-600"></i>
+                        <select id="statut-select" class="form-select block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <option value="all">Tous les devoirs</option>
+                            <option value="aFaire">À faire</option>
+                            <option value="enRetard">En retard</option>
+                            <option value="rendu">Rendus</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="book-open" class="w-5 h-5 text-gray-600"></i>
+                        <select id="matiere-select" class="form-select block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <option value="all">Toutes les matières</option>
+                            <option th:each="matiere : ${matieres}" th:value="${matiere.id}" th:text="${matiere.nom}"></option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div th:each="devoir : ${devoirs}"
+                 class="bg-white rounded-xl shadow-lg p-6 slide-in card-hover relative"
+                 >
+
+
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600">
+                        <i data-lucide="book-open" class="w-6 h-6"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-xl font-bold text-gray-900 truncate" th:text="${devoir.titre}">Projet de Mathématiques</h3>
+                        <p class="text-sm text-gray-500" th:text="${devoir.enseignant.matiere}">Mathématiques</p>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-sm text-gray-600 space-y-2">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="user" class="w-4 h-4 text-gray-500"></i>
+                        <span th:text="${devoir.enseignant.userAccountEntity.nom}">M. Bernard</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="calendar" class="w-4 h-4 text-gray-500"></i>
+                        <span th:text="'Date de remise : ' + ${#dates.format(devoir.dateRemise, 'dd/MM/yyyy')}">Date de remise : 28/09/2025</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="list-checks" class="w-4 h-4 text-gray-500"></i>
+                        <span th:text="${devoir.typeEvaluation.name()}">Exercice</span>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-4 border-t border-dashed border-gray-300">
+                    <p class="text-sm text-gray-700 font-medium mb-2">Description :</p>
+                    <p class="text-sm text-gray-600" th:text="${devoir.description}">Rendre les exercices 1 à 5 de la page 42 du manuel.</p>
+                </div>
+
+                <a href="#" class="mt-4 inline-flex items-center text-orange-600 hover:text-orange-800 transition-colors text-sm font-medium">
+                    <span>Accéder au devoir</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
+                </a>
+            </div>
+            <div th:if="${devoirs.isEmpty()}" class="col-span-full text-center py-12 text-gray-500">
+                <i data-lucide="check-check" class="w-12 h-12 mx-auto mb-4 text-green-400"></i>
+                <p class="text-lg font-medium">Aucun devoir à l'horizon !</p>
+                <p class="text-sm">Profitez de votre temps libre ou révisez vos leçons passées.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    lucide.createIcons();
+
+    // Gestion de la sidebar pour mobile
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    mobileMenuButton.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+    });
+
+    // Gestion des filtres
+    const statutSelect = document.getElementById('statut-select');
+    const matiereSelect = document.getElementById('matiere-select');
+
+    function applyFilters() {
+        const statut = statutSelect.value;
+        const matiere = matiereSelect.value;
+        const url = new URL(window.location.href);
+        if (statut !== 'all') {
+            url.searchParams.set('statut', statut);
+        } else {
+            url.searchParams.delete('statut');
+        }
+        if (matiere !== 'all') {
+            url.searchParams.set('matiere', matiere);
+        } else {
+            url.searchParams.delete('matiere');
+        }
+        window.location.href = url.toString();
+    }
+
+    statutSelect.addEventListener('change', applyFilters);
+    matiereSelect.addEventListener('change', applyFilters);
+
+    // Au chargement de la page, sélectionner les filtres déjà appliqués
+    window.onload = () => {
+        const params = new URLSearchParams(window.location.search);
+        const statut = params.get('statut');
+        const matiere = params.get('matiere');
+        if (statut) {
+            statutSelect.value = statut;
+        }
+        if (matiere) {
+            matiereSelect.value = matiere;
+        }
+    };
+</script>
+</body>
+</html>

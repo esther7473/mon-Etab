@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emploi du Temps - Mon Etab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .slide-in {
+            animation: slideIn 0.6s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        @media (min-width: 1024px) {
+            .main-content {
+                margin-left: 16rem;
+            }
+        }
+        .tab-active {
+            color: #4f46e5;
+            background-color: #e0e7ff;
+            font-weight: 600;
+        }
+        .tab-inactive {
+            color: #6b7280;
+        }
+        .tab-item:hover {
+            background-color: #f3f4f6;
+        }
+        .schedule-card {
+            border-left: 4px solid;
+            color: #1f2937;
+            font-weight: 500;
+        }
+        .schedule-mathematiques { background-color: #fecaca; border-left-color: #dc2626; }
+        .schedule-francais { background-color: #fde68a; border-left-color: #f59e0b; }
+        .schedule-physique { background-color: #d1fae5; border-left-color: #10b981; }
+        .schedule-histoire { background-color: #c7d2fe; border-left-color: #4f46e5; }
+        .schedule-svt { background-color: #bfdbfe; border-left-color: #2563eb; }
+        .schedule-anglais { background-color: #c4b5fd; border-left-color: #7c3aed; }
+        .schedule-sport { background-color: #fce7f3; border-left-color: #db2777; }
+        .schedule-geographie { background-color: #e0f2fe; border-left-color: #0ea5e9; }
+        .schedule-chimie { background-color: #e5e7eb; border-left-color: #6b7280; }
+        .schedule-litterature { background-color: #f3e8ff; border-left-color: #9333ea; }
+        .schedule-default { background-color: #f3f4f6; border-left-color: #9ca3af; }
+
+        /* Styles d'impression pour le tableau d'emploi du temps */
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 0.5cm;
+            }
+
+            /* Masquer tous les éléments sauf le tableau */
+            body * {
+                visibility: hidden;
+            }
+
+            /* Afficher uniquement le conteneur du tableau et ses enfants */
+            .timetable-container, .timetable-container * {
+                visibility: visible;
+            }
+
+            /* Positionner le tableau pour l'impression */
+            .timetable-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white;
+            }
+
+            /* Styles spécifiques pour le tableau d'impression */
+            .print-table {
+                width: 100% !important;
+                font-size: 10px !important;
+                border-collapse: collapse !important;
+            }
+
+            .print-table th,
+            .print-table td {
+                border: 1px solid #000 !important;
+                padding: 4px !important;
+                text-align: center !important;
+                vertical-align: middle !important;
+            }
+
+            .print-table th {
+                background-color: #f3f4f6 !important;
+                font-weight: bold !important;
+                font-size: 11px !important;
+            }
+
+            .print-table .schedule-card {
+                background-color: #f9fafb !important;
+                border: none !important;
+                padding: 2px !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+            }
+
+            .print-table .schedule-card p {
+                margin: 1px 0 !important;
+                font-size: 9px !important;
+                line-height: 1.2 !important;
+            }
+
+            /* Titre d'impression */
+            .print-title {
+                text-align: center;
+                font-size: 16px !important;
+                font-weight: bold !important;
+                margin-bottom: 10px !important;
+                color: #000 !important;
+            }
+
+            /* Masquer les éléments non nécessaires à l'impression */
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+<div th:replace="~{eleve/fragments :: sidebar(activePage='emploi-du-temps')}"></div>
+
+<div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+<div class="main-content min-h-screen">
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <button id="mobile-menu-button" class="lg:hidden mr-4 p-1 hover:bg-white hover:bg-opacity-20 rounded">
+                    <i data-lucide="menu" class="w-6 h-6 text-white"></i>
+                </button>
+                <div class="flex items-center space-x-4">
+                    <div class="glass-effect rounded-lg p-2">
+                        <i data-lucide="bar-chart-2" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">Emploi du Temps</h1>
+                        <p class="text-blue-100">Espace Élève</p>
+                    </div>
+                </div>
+                <!-- Profil étudiant -->
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">
+                            <!-- Gestion des valeurs nulles pour les initiales -->
+                            <span th:text="${student.prenom != null and student.nom != null ?
+                                #strings.substring(student.prenom,0,1) + #strings.substring(student.nom,0,1) :
+                                'ÉT'}">ÉT</span>
+                        </div>
+                        <div class="hidden md:block">
+                            <p class="font-semibold">
+                                <span th:text="${student.prenom != null ? student.prenom : 'Prénom'} + ' ' + ${student.nom != null ? student.nom : 'Nom'}">
+                                    Nom Étudiant
+                                </span> -
+                                <span th:text="${student.classDTO != null and student.classDTO.label != null ? student.classDTO.label : 'Classe non définie'}">
+                                    Classe
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-6 py-8">
+        <!-- Statistiques -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col justify-center items-center text-center card-hover">
+                <p class="text-gray-500 text-sm font-medium">Total heures</p>
+                <p class="text-3xl font-bold text-blue-600" th:text="${totalHours != null ? totalHours : 0}">0</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col justify-center items-center text-center card-hover">
+                <p class="text-gray-500 text-sm font-medium">Matières</p>
+                <p class="text-3xl font-bold text-green-600" th:text="${differentSubjects != null ? differentSubjects : 0}">0</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col justify-center items-center text-center card-hover">
+                <p class="text-gray-500 text-sm font-medium">Classes</p>
+                <p class="text-3xl font-bold text-purple-600" th:text="${differentClasses != null ? differentClasses : 0}">0</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col justify-center items-center text-center card-hover">
+                <p class="text-gray-500 text-sm font-medium">Cours cette semaine</p>
+                <p class="text-3xl font-bold text-orange-600" th:text="${courses != null ? courses.size() : 0}">0</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-6 slide-in">
+            <div class="flex items-center justify-between mb-6 no-print">
+                <div class="flex items-center">
+                    <i data-lucide="calendar-check" class="w-6 h-6 mr-2 text-gray-600"></i>
+                    <h2 class="text-xl font-bold text-gray-800"
+                        th:text="'Emploi du temps - ' + ${currentWeek != null ? currentWeek : 'Semaine actuelle'}">
+                        Emploi du temps
+                    </h2>
+                </div>
+                <button onclick="printTimetable()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 flex items-center">
+                    <i data-lucide="printer" class="w-4 h-4 mr-2"></i>
+                    Imprimer
+                </button>
+            </div>
+
+            <!-- Conteneur spécial pour l'impression -->
+            <div class="timetable-container">
+                <!-- Titre pour l'impression -->
+                <div class="print-title"
+                     th:text="'Emploi du temps - ' +
+                     ${student.prenom != null ? student.prenom : 'Prénom'} + ' ' +
+                     ${student.nom != null ? student.nom : 'Nom'} + ' - ' +
+                     ${student.classDTO != null and student.classDTO.label != null ? student.classDTO.label : 'Classe non définie'} + ' - ' +
+                     ${currentWeek != null ? currentWeek : 'Semaine actuelle'}">
+                    Emploi du temps
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 print-table">
+                        <thead>
+                        <tr class="bg-gray-50">
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Heure</th>
+                            <th th:each="day : ${daysOfWeek}" scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                th:text="${day != null ? day : 'Jour'}">Jour</th>
+                        </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                        <!-- Génération dynamique des créneaux horaires -->
+                        <tr th:each="timeSlot : ${timeSlots != null ? timeSlots : {}}">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+                                th:text="${timeSlot != null ? timeSlot : 'Créneau'}">Créneau</td>
+                            <!-- Génération des cellules pour chaque jour -->
+                            <td th:each="day : ${daysOfWeek != null ? daysOfWeek : {}}" class="px-6 py-4">
+                                <!-- Approche plus sécurisée pour éviter les erreurs d'indexation -->
+                                <th:block th:if="${timetableGrid != null and timetableGrid.containsKey(timeSlot)}">
+                                    <th:block th:with="dayMap=${timetableGrid.get(timeSlot)}">
+                                        <th:block th:if="${dayMap != null and dayMap.containsKey(day)}">
+                                            <th:block th:with="currentCourse=${dayMap.get(day)}">
+                                                <div th:if="${currentCourse != null}"
+                                                     th:class="'schedule-card rounded-lg p-2 ' +
+                                                 ${currentCourse.enseignant != null and currentCourse.enseignant.matiere != null and currentCourse.enseignant.matiere.nom != null ?
+                                                 'schedule-' + #strings.toLowerCase(#strings.replace(currentCourse.enseignant.matiere.nom, ' ', '')) :
+                                                 'schedule-default'}">
+                                                    <p class="text-sm font-medium"
+                                                       th:text="${currentCourse.enseignant != null and currentCourse.enseignant.matiere != null and currentCourse.enseignant.matiere.nom != null ?
+                                                   currentCourse.enseignant.matiere.nom : 'Matière non définie'}">Matière</p>
+                                                    <p class="text-xs text-gray-600"
+                                                       th:text="${currentCourse.salle != null ? currentCourse.salle : 'Salle non définie'}">Salle</p>
+                                                    <p class="text-xs text-gray-500"
+                                                       th:text="${currentCourse.enseignant != null and currentCourse.enseignant.userAccount != null ?
+                                                   currentCourse.enseignant.nom : 'Enseignant non défini'}">Enseignant</p>
+                                                </div>
+                                            </th:block>
+                                        </th:block>
+                                    </th:block>
+                                </th:block>
+                                <!-- Cellule vide par défaut -->
+                                <div class="h-16 flex items-center justify-center text-gray-400 text-xs">
+                                    <!-- Cellule vide -->
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Liste des cours à venir -->
+            <div class="mt-8 no-print">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                    <i data-lucide="clock" class="w-5 h-5 mr-2 text-blue-600"></i>
+                    Prochains cours
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div th:each="course : ${courses != null ? courses : {}}"
+                         th:if="${course.dateCours != null and course.dateCours.isAfter(#temporals.createToday())}"
+                         class="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-500 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-semibold text-gray-800"
+                                th:text="${course.enseignant != null and course.enseignant.matiere != null and course.enseignant.matiere.nom != null ?
+                                course.enseignant.matiere.nom : 'Matière non définie'}">Matière</h4>
+                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full"
+                                  th:text="${course.typeCours != null ? course.typeCours : 'Cours'}">Type</span>
+                        </div>
+                        <div class="text-sm text-gray-600 space-y-1">
+                            <p><i data-lucide="calendar" class="w-4 h-4 inline mr-1"></i>
+                                <span th:text="${course.dateCours != null ? #temporals.format(course.dateCours, 'dd/MM/yyyy') : 'Date non définie'}">Date</span></p>
+                            <p><i data-lucide="clock" class="w-4 h-4 inline mr-1"></i>
+                                <span th:text="${(course.heureDebut != null ? course.heureDebut : '--') + ' - ' + (course.heureFin != null ? course.heureFin : '--')}">Horaire</span></p>
+                            <p><i data-lucide="map-pin" class="w-4 h-4 inline mr-1"></i>
+                                <span th:text="${course.salle != null ? course.salle : 'Salle non définie'}">Salle</span></p>
+                            <p><i data-lucide="user" class="w-4 h-4 inline mr-1"></i>
+                                <span th:text="${course.enseignant != null and course.enseignant.userAccount != null ? course.enseignant.nom : 'Enseignant non défini'}">Enseignant</span></p>
+                        </div>
+                    </div>
+                    <!-- Message si aucun cours à venir -->
+                    <div th:if="${courses == null or courses.empty}" class="col-span-full text-center py-8 text-gray-500">
+                        <i data-lucide="calendar-x" class="w-12 h-12 mx-auto mb-4 text-gray-400"></i>
+                        <p>Aucun cours à venir cette semaine</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const mainContent = document.querySelector('.main-content');
+
+    mobileMenuButton.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+    });
+
+    // Fonction d'impression personnalisée pour le tableau d'emploi du temps
+    function printTimetable() {
+        // Créer une nouvelle fenêtre pour l'impression
+        const printWindow = window.open('', '_blank');
+
+        // Récupérer le contenu du tableau
+        const timetableContainer = document.querySelector('.timetable-container');
+
+        if (!timetableContainer) {
+            alert('Tableau d\'emploi du temps non trouvé');
+            return;
+        }
+
+        // Créer le contenu HTML pour l'impression
+        const printContent = `
+            <!DOCTYPE html>
+            <html lang="fr">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Emploi du Temps - Impression</title>
+                <style>
+                    @page {
+                        size: A4 landscape;
+                        margin: 0.5cm;
+                    }
+
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 0;
+                        padding: 0;
+                        background: white;
+                        color: black;
+                    }
+
+                    .print-title {
+                        text-align: center;
+                        font-size: 18px;
+                        font-weight: bold;
+                        margin-bottom: 15px;
+                        color: #000;
+                        border-bottom: 2px solid #000;
+                        padding-bottom: 10px;
+                    }
+
+                    .print-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        font-size: 11px;
+                        margin: 0 auto;
+                    }
+
+                    .print-table th,
+                    .print-table td {
+                        border: 1px solid #000;
+                        padding: 6px;
+                        text-align: center;
+                        vertical-align: middle;
+                        word-wrap: break-word;
+                    }
+
+                    .print-table th {
+                        background-color: #f0f0f0;
+                        font-weight: bold;
+                        font-size: 12px;
+                    }
+
+                    .print-table th:first-child {
+                        width: 15%;
+                    }
+
+                    .print-table th:not(:first-child) {
+                        width: 17%;
+                    }
+
+                    .schedule-card {
+                        background-color: #f9f9f9;
+                        border: none;
+                        padding: 3px;
+                        margin: 0;
+                        border-radius: 3px;
+                        min-height: 40px;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                    }
+
+                    .schedule-card p {
+                        margin: 1px 0;
+                        font-size: 9px;
+                        line-height: 1.3;
+                        font-weight: normal;
+                    }
+
+                    .schedule-card p:first-child {
+                        font-weight: bold;
+                        font-size: 10px;
+                    }
+
+                    /* Styles pour les différentes matières */
+                    .schedule-mathematiques { background-color: #fecaca !important; }
+                    .schedule-francais { background-color: #fde68a !important; }
+                    .schedule-physique { background-color: #d1fae5 !important; }
+                    .schedule-histoire { background-color: #c7d2fe !important; }
+                    .schedule-svt { background-color: #bfdbfe !important; }
+                    .schedule-anglais { background-color: #c4b5fd !important; }
+                    .schedule-sport { background-color: #fce7f3 !important; }
+                    .schedule-geographie { background-color: #e0f2fe !important; }
+                    .schedule-chimie { background-color: #e5e7eb !important; }
+                    .schedule-litterature { background-color: #f3e8ff !important; }
+                    .schedule-default { background-color: #f3f4f6 !important; }
+                </style>
+            </head>
+            <body>
+                ${timetableContainer.outerHTML}
+            </body>
+            </html>
+        `;
+
+        // Écrire le contenu dans la nouvelle fenêtre
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+
+        // Attendre que le contenu soit chargé puis imprimer
+        printWindow.onload = function() {
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+        };
+    }
+</script>
+</body>
+</html>

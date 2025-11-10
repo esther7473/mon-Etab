@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emploi du Temps - Mon Etab (Enseignant)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <style>
+        .gradient-bg-enseignant {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .slide-in { animation: slideIn 0.6s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .main-content { margin-left: 0; }
+        @media (min-width: 1024px) { .main-content { margin-left: 16rem; } }
+        .tab-active { background-color: #f0fdf4; color: #059669; font-weight: 600; }
+        .tab-inactive { color: #d1fae5; }
+        .tab-item:hover { background-color: #059669; }
+        .schedule-card {
+            border-left: 4px solid;
+            color: #1f2937;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .schedule-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .schedule-green { background-color: #d1fae5; border-left-color: #10b981; }
+        .schedule-purple { background-color: #e9d5ff; border-left-color: #a855f7; }
+        .schedule-red { background-color: #fee2e2; border-left-color: #ef4444; }
+        .schedule-blue { background-color: #dbeafe; border-left-color: #3b82f6; }
+        .schedule-dashed { border: 1px dashed #9ca3af; background-color: #f3f4f6; color: #6b7280; }
+        .schedule-header th { border-right: 1px solid #e5e7eb; }
+        .schedule-header th:last-child { border-right: none; }
+        .schedule-table td { border-right: 1px solid #e5e7eb; }
+        .schedule-table td:last-child { border-right: none; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+<!-- Sidebar dynamique -->
+<div th:replace="~{teacher/fragment :: sidebar(activePage='emploi-du-temps')}"></div>
+<div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+<div class="main-content min-h-screen">
+    <header class="gradient-bg-enseignant text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+            <button id="mobile-menu-button" class="lg:hidden mr-4 p-1 hover:bg-white hover:bg-opacity-20 rounded">
+                <i data-lucide="menu" class="w-6 h-6 text-white"></i>
+            </button>
+            <div class="flex items-center space-x-4">
+                <div class="glass-effect rounded-lg p-2"><i data-lucide="award" class="w-8 h-8"></i></div>
+                <h1 class="text-2xl font-bold">Emploi du Temps</h1>
+            </div>
+            <!-- Profil enseignant -->
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white font-bold">
+                        <span th:text="${#strings.substring(teacher.prenom,0,1) + #strings.substring(teacher.nom,0,1)}">XX</span>
+                    </div>
+                    <div class="hidden md:block">
+                        <p class="font-semibold">
+                            Bonjour, <span th:text="${teacher.prenom + ' ' + teacher.nom}"></span> -
+                            <span th:text="${teacher.matiere.nom}"></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-6 py-8">
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6 slide-in">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="calendar-check" class="w-6 h-6 text-gray-600"></i>
+                    <h2 class="text-xl font-bold text-gray-800">Mon Emploi du Temps</h2>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button class="flex items-center px-3 py-1 bg-gray-200 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-300">
+                        <i data-lucide="chevron-left" class="w-4 h-4 mr-1"></i> Semaine précédente
+                    </button>
+                    <span class="text-lg font-semibold text-gray-800" th:text="${currentWeek}">Semaine du 26 Août au 30 Août 2025</span>
+                    <button class="flex items-center px-3 py-1 bg-gray-200 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-300">
+                        Semaine suivante <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i>
+                    </button>
+                    <!--button class="flex items-center px-3 py-1 bg-green-500 rounded-full text-sm font-medium text-white hover:bg-green-600">
+                        <i data-lucide="plus" class="w-4 h-4 mr-1"></i> Ajouter cours
+                    </button-->
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 schedule-table">
+                    <thead>
+                    <tr class="bg-gray-50 schedule-header">
+                        <th>Horaire</th>
+                        <th th:each="day : ${daysOfWeek}" th:text="${day}">Jour</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- Créer des créneaux horaires -->
+                    <tr th:each="timeSlot : ${timeSlots}">
+                        <td th:text="${timeSlot}">08:00-09:00</td>
+                        <!-- Pour chaque jour de la semaine -->
+                        <td th:each="dayIndex : ${#numbers.sequence(0, 4)}">
+                            <!-- Trouver le cours correspondant à ce créneau et ce jour -->
+                            <th:block th:each="course : ${courses}">
+                                <div th:if="${course.dateCours != null and course.heureDebut != null and course.heureFin != null}">
+                                    <div th:if="${T(java.time.DayOfWeek).from(course.dateCours).value == dayIndex + 1}">
+                                        <div th:if="${#strings.substring(course.heureDebut.toString(), 0, 5) == #strings.substring(timeSlot, 0, 5)}"
+
+                                             class="schedule-card schedule-green rounded-lg p-2 mb-1">
+                                            <span th:text="${course.classe.label}">Classe</span> -
+                                            <span th:text="${course.salle}">Salle</span><br>
+                                            <span th:text="${teacher.matiere.nom}">Horaire</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th:block>
+                            <!-- Si aucun cours n'est trouvé pour ce créneau -->
+                            <th:block th:with="foundCourse=false">
+                                <th:block th:each="course : ${courses}">
+                                    <th:block th:if="${course.dateCours != null and course.heureDebut != null and course.heureFin != null
+                      and T(java.time.DayOfWeek).from(course.dateCours).value == dayIndex + 1
+                      and #strings.substring(course.heureDebut.toString(), 0, 5) == #strings.substring(timeSlot, 0, 5)}">
+                                        <th:block th:with="foundCourse=true"></th:block>
+                                    </th:block>
+                                </th:block>
+
+                                <div th:if="${not foundCourse}"
+                                     class="schedule-card schedule-dashed rounded-lg p-2 flex flex-col items-center justify-center h-full">
+                                    Libre
+                                </div>
+                            </th:block>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                <div class="flex items-center space-x-2 mb-2">
+                    <i data-lucide="bar-chart-2" class="w-5 h-5 text-gray-600"></i>
+                    <h3 class="font-bold text-gray-800">Résumé hebdomadaire</h3>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-lg p-3 shadow-sm text-center">
+                        <p class="text-gray-500 text-sm" th:text="${totalHours} + 'h de cours'">18h de cours</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-3 shadow-sm text-center">
+                        <p class="text-gray-500 text-sm" th:text="${differentClasses} + ' classes différentes'">3 classes différentes</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    mobileMenuButton.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    });
+    overlay.addEventListener('click', () => {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+    });
+</script>
+
+</body>
+</html>

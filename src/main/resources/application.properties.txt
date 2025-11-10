@@ -1,0 +1,50 @@
+spring.application.name=monetab-v2-new
+
+
+spring.thymeleaf.prefix=classpath:/templates/
+spring.thymeleaf.suffix=.html
+
+#JWT
+# Configuration JWT
+# A completer
+security.authentication.jwt.base64-secret=****
+security.authentication.jwt.token-validity-in-seconds=86400
+security.authentication.jwt.token-validity-in-seconds-for-remember-me=2592000
+
+
+# Connexion PostgreSQL
+# A completer
+spring.datasource.url=jdbc:postgresql://localhost:5432/jwt-monetab
+spring.datasource.username=****
+spring.datasource.password=****
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# JPA/Hibernate
+
+# A completer
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.database=****
+spring.mvc.hiddenmethod.filter.enabled=true
+
+# Active le mode DEBUG pour Spring Security
+logging.level.org.springframework.security=DEBUG
+
+# Configuration Email
+
+# A completer
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=****
+spring.mail.password=****
+
+
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+spring.mail.properties.mail.smtp.connectiontimeout=5000
+spring.mail.properties.mail.smtp.timeout=5000
+spring.mail.properties.mail.smtp.writetimeout=5000
+
+# Expéditeur par défaut
+spring.mail.from=no-reply@monetab.ci

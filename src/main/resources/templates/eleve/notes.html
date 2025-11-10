@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Notes - Mon Etab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .slide-in {
+            animation: slideIn 0.6s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        @media (min-width: 1024px) {
+            .main-content {
+                margin-left: 16rem;
+            }
+        }
+        /* Styles spécifiques aux notes */
+        .note-card-border {
+            border-left: 4px solid;
+        }
+        .note-mathematiques { border-left-color: #3b82f6; }
+        .note-physique { border-left-color: #10b981; }
+        .note-physique-chimie { border-left-color: #10b981; }
+        .note-histoire { border-left-color: #f59e0b; }
+        .note-anglais { border-left-color: #8b5cf6; }
+        .note-francais { border-left-color: #ef4444; }
+        .note-sport { border-left-color: #06b6d4; }
+        .note-eps { border-left-color: #06b6d4; }
+        .note-philosophie { border-left-color: #ec4899; }
+        .note-svt { border-left-color: #059669; }
+        .note-chimie { border-left-color: #7c3aed; }
+        .note-geographie { border-left-color: #0ea5e9; }
+        .note-litterature { border-left-color: #9333ea; }
+        .note-default { border-left-color: #6b7280; }
+        /* Pour les notes basses, moyennes et hautes */
+        .note-low { color: #dc2626; }
+        .note-medium { color: #f59e0b; }
+        .note-high { color: #16a34a; }
+        .rang-bg {
+            background: linear-gradient(45deg, #f0fdf4, #dcfce7);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+<div th:replace="~{eleve/fragments :: sidebar(activePage='notes')}"></div>
+
+<div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+<div class="main-content min-h-screen">
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <button id="mobile-menu-button" class="lg:hidden mr-4 p-1 hover:bg-white hover:bg-opacity-20 rounded">
+                    <i data-lucide="menu" class="w-6 h-6 text-white"></i>
+                </button>
+                <div class="flex items-center space-x-4">
+                    <div class="glass-effect rounded-lg p-2">
+                        <i data-lucide="bar-chart-2" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">Mes Notes</h1>
+                        <p class="text-blue-100">Espace Élève</p>
+                    </div>
+                </div>
+                <!-- Profil étudiant -->
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">
+                            <!-- Gestion des valeurs nulles pour les initiales -->
+                            <span th:text="${student.prenom != null and student.nom != null ?
+                                #strings.substring(student.prenom,0,1) + #strings.substring(student.nom,0,1) :
+                                'ÉT'}">ÉT</span>
+                        </div>
+                        <div class="hidden md:block">
+                            <p class="font-semibold">
+                                <span th:text="${student.prenom != null ? student.prenom : 'Prénom'} + ' ' + ${student.nom != null ? student.nom : 'Nom'}">
+                                    Nom Étudiant
+                                </span> -
+                                <span th:text="${student.classDTO != null and student.classDTO.label != null ? student.classDTO.label : 'Classe non définie'}">
+                                    Classe
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-6 py-8">
+        <!-- Statistiques des notes -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="bg-white rounded-xl shadow-lg p-6 slide-in card-hover flex items-center space-x-4">
+                <div class="w-12 h-12 flex items-center justify-center rounded-full bg-green-100 text-green-600">
+                    <i data-lucide="trending-up" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-sm">Moyenne Générale</p>
+                    <p class="text-2xl font-bold text-gray-800"
+                       th:if="${notes != null and !notes.isEmpty()}"
+                       th:with="moyenne=${#aggregates.avg(notes.![valeur])}"
+                       th:text="${moyenne != null ? #numbers.formatDecimal(moyenne, 1, 2) + '/20' : '--/20'}">--/20</p>
+                    <p class="text-2xl font-bold text-gray-400" th:unless="${notes != null and !notes.isEmpty()}">--/20</p>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 slide-in card-hover flex items-center space-x-4 rang-bg">
+                <div class="w-12 h-12 flex items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                    <i data-lucide="award" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-sm">Nombre de Notes</p>
+                    <p class="text-2xl font-bold text-gray-800" th:text="${notes != null ? notes.size() : 0}">0</p>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 slide-in card-hover flex items-center space-x-4">
+                <div class="w-12 h-12 flex items-center justify-center rounded-full bg-purple-100 text-purple-600">
+                    <i data-lucide="book-open" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-sm">Matières Évaluées</p>
+                    <p class="text-2xl font-bold text-gray-800"
+                       th:if="${notes != null and !notes.isEmpty()}"
+                       th:text="${#sets.size(notes.![enseignant.matiere.nom])}">0</p>
+                    <p class="text-2xl font-bold text-gray-400" th:unless="${notes != null and !notes.isEmpty()}">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6 slide-in">
+            <div class="flex items-center justify-between">
+                <h2 class="text-2xl font-bold text-gray-800">Détail des notes</h2>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="calendar" class="w-5 h-5 text-gray-600"></i>
+                        <select id="periode-select" class="form-select block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <option selected>Trimestre 1</option>
+                            <option>Trimestre 2</option>
+                            <option>Trimestre 3</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden slide-in">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matière</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Moyenne</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enseignant</th>
+                        <th scope="col" class="relative px-6 py-3"><span class="sr-only">Détails</span></th>
+                    </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+
+                    <!-- Affichage des notes groupées par matière -->
+                    <th:block th:if="${notesParMatiere != null and !notesParMatiere.isEmpty()}">
+                        <th:block th:each="entry : ${notesParMatiere}">
+                            <th:block th:with="matiere=${entry.key}, notesMatiere=${entry.value}">
+
+                                <!-- Ligne principale -->
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+                                        th:text="${matiere != null ? matiere : 'Matière non définie'}">Matière</td>
+
+                                    <!-- Moyenne par matière -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium"
+                                        th:with="moyenne=${moyennesParMatiere != null ? moyennesParMatiere.get(matiere) : null}"
+                                        th:class="${moyenne != null} ?
+                                            (${moyenne >= 16} ? 'text-green-700' :
+                                             (${moyenne >= 12} ? 'text-yellow-700' : 'text-red-700')) : 'text-gray-400'"
+                                        th:text="${moyenne != null ? #numbers.formatDecimal(moyenne, 1, 2) + '/20' : '--/20'}">--/20</td>
+
+                                    <!-- Enseignant -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                                        th:text="${notesMatiere != null and !notesMatiere.isEmpty() and notesMatiere[0] != null and
+                                        notesMatiere[0].enseignant != null and notesMatiere[0].enseignant.userAccount != null ?
+                                        notesMatiere[0].enseignant.userAccount.prenom + ' ' + notesMatiere[0].enseignant.nom :
+                                        'Enseignant non défini'}">
+                                        Enseignant
+                                    </td>
+
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <button class="text-indigo-600 hover:text-indigo-900" onclick="toggleDetails(this)">
+                                            <i data-lucide="chevron-down" class="w-5 h-5 details-icon"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Détails (optionnel) -->
+                                <tr class="details-row hidden bg-white">
+                                    <td colspan="4" class="px-6 py-4">
+                                        <div class="border-t border-dashed border-gray-300 pt-4">
+                                            <div th:each="noteDetail : ${notesMatiere != null ? notesMatiere : {}}"
+                                                 class="flex justify-between items-center py-2 px-4 rounded-lg mb-2 border">
+
+                                                <div class="flex-1">
+                                                    <p class="text-sm font-medium"
+                                                       th:text="'Note: ' + ${noteDetail.valeur != null ? noteDetail.valeur : '--'} + '/20'"></p>
+                                                    <p class="text-xs text-gray-600"
+                                                       th:text="${noteDetail.appreciation != null} ? ${noteDetail.appreciation} : 'Aucun commentaire'">
+                                                    </p>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            </th:block>
+                        </th:block>
+                    </th:block>
+
+                    <!-- Message si aucune note -->
+                    <tr th:if="${notes == null or notes.isEmpty()}">
+                        <td colspan="4" class="px-6 py-8 text-center">
+                            <div class="flex flex-col items-center justify-center text-gray-500">
+                                <i data-lucide="book-open" class="w-12 h-12 mb-4 text-gray-300"></i>
+                                <p class="text-lg font-medium">Aucune note disponible</p>
+                                <p class="text-sm">Les notes apparaîtront ici une fois les évaluations saisies.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const mainContent = document.querySelector('.main-content');
+
+    mobileMenuButton.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+    });
+
+    function toggleDetails(button) {
+        const row = button.closest('tr');
+        const detailsRow = row.nextElementSibling;
+        const isHidden = detailsRow.classList.contains('hidden');
+
+        // Fermer tous les autres détails ouverts
+        document.querySelectorAll('.details-row').forEach(row => {
+            if (row !== detailsRow) {
+                row.classList.add('hidden');
+                const otherButton = row.previousElementSibling.querySelector('.details-icon');
+                if (otherButton) {
+                    otherButton.setAttribute('data-lucide', 'chevron-down');
+                }
+            }
+        });
+
+        // Basculer l'état du détail actuel
+        detailsRow.classList.toggle('hidden');
+        const icon = button.querySelector('.details-icon');
+        if (detailsRow.classList.contains('hidden')) {
+            icon.setAttribute('data-lucide', 'chevron-down');
+        } else {
+            icon.setAttribute('data-lucide', 'chevron-up');
+        }
+        lucide.createIcons();
+    }
+
+    // Fonction pour calculer et afficher des statistiques dynamiques
+    function updateGradeStatistics() {
+        const gradeElements = document.querySelectorAll('[data-grade]');
+        if (gradeElements.length === 0) return;
+
+        const grades = Array.from(gradeElements).map(el => parseFloat(el.dataset.grade));
+        const average = grades.reduce((sum, grade) => sum + grade, 0) / grades.length;
+
+        // Mettre à jour l'affichage si nécessaire
+        console.log(`Moyenne calculée: ${average.toFixed(2)}`);
+    }
+
+    const periodeSelect = document.getElementById('periode-select');
+    if (periodeSelect) {
+        periodeSelect.addEventListener('change', (event) => {
+            // Fonction pour changer de période - nécessiterait une implémentation côté serveur
+            console.log(`Période sélectionnée : ${event.target.value}`);
+            // Ici, on pourrait faire une requête AJAX pour charger les notes de la période sélectionnée
+        });
+    }
+
+    // Initialiser les statistiques au chargement
+    document.addEventListener('DOMContentLoaded', () => {
+        updateGradeStatistics();
+    });
+</script>
+</body>
+</html>

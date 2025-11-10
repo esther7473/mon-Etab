@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:form="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${teacher.id} ? 'Modifier Enseignant' : 'Ajouter un Enseignant'">Ajouter un Enseignant - Mon Etab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #a9121a 0%, #d42a22 100%);
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        @media (min-width: 1024px) {
+            .main-content {
+                margin-left: 16rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+<div th:replace="~{admin/fragment :: sidebar(activePage='enseignants')}"></div>
+
+<div class="main-content min-h-screen">
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <a th:href="@{/admin/enseignants}" class="text-white hover:text-gray-200">
+                    <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                </a>
+                <span class="text-2xl font-bold uppercase">
+                    <span th:text="${teacher.id} ? 'Modifier Enseignant' : 'Ajouter un Enseignant'">Ajouter un Enseignant</span>
+                </span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-right hidden sm:block">
+                    <p class="font-semibold">Dr. Adjoumane KOFFI</p>
+                    <p class="text-sm font-light">Directeur Général</p>
+                </div>
+                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-red-700 font-bold border-2 border-white">
+                    <span>AK</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto p-6 lg:p-10">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <form th:action="${teacher.id} ? @{/admin/enseignants/update/} + ${teacher.id} : @{/admin/enseignants/add}"
+                  th:object="${teacher}" method="post">
+                
+                <!-- Personal Information -->
+                <input type="hidden" th:field="*{id}" >
+                <input type="hidden" th:field="*{userAccount.id}" >
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Informations Personnelles</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="userAccountEntity.nom" class="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+                            <input type="text" id="userAccountEntity.nom" th:field="*{nom}"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent" required>
+                        </div>
+                        <div>
+                            <label for="userAccountEntity.prenom" class="block text-sm font-medium text-gray-700 mb-1">Prénoms</label>
+                            <input type="text" id="userAccountEntity.prenom" th:field="*{prenom}"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent" required>
+                        </div>
+                        <div>
+                            <label for="userAccountEntity.login" class="block text-sm font-medium text-gray-700 mb-1">login</label>
+                            <input type="text" id="userAccountEntity.login" th:field="*{login}"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent" required>
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="email" th:field="*{email}"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent" required>
+                        </div>
+                        <div>
+                            <label for="userAccount.tel" class="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+                            <input type="tel" id="userAccount.tel" th:field="*{tel}"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent" required>
+                        </div>
+                        <div>
+                            <label for="birthDate" class="block text-sm font-medium text-gray-700 mb-1">Date de Naissance</label>
+                            <input type="date" id="birthDate" th:field="*{birthDate}"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent" required>
+                        </div>
+                        <div class="flex items-end">
+                            <div class="flex items-center h-5">
+                                <input id="isVacant" type="checkbox" th:field="*{isVacant}" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                                <label for="isVacant" class="ml-2 block text-sm text-gray-700">
+                                    Disponible
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Teaching Information -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Informations d'Enseignement</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="matiere" class="block text-sm font-medium text-gray-700 mb-1">Matière</label>
+                            <select id="matiere" th:field="*{matiere.id}" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                                <option value="">Sélectionner une matière</option>
+                                <option th:each="matiere : ${matieres}" 
+                                        th:value="${matiere.id}" 
+                                        th:text="${matiere.nom}"
+                                        th:selected="${teacher.matiere != null && teacher.matiere.id == matiere.id}">
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                    <a th:href="@{/admin/enseignants}" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                        Annuler
+                    </a>
+                    <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                        <span th:text="${teacher.id} ? 'Mettre à jour' : 'Enregistrer'">Enregistrer</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    // Script pour la barre latérale (bascule sur mobile)
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const closeSidebarButton = document.getElementById('close-sidebar-button');
+    const sidebar = document.querySelector('[th\\:fragment="sidebar"]');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    if (mobileMenuButton && sidebar && overlay) {
+        mobileMenuButton.addEventListener('click', () => {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+        });
+    }
+
+    if (closeSidebarButton && sidebar && overlay) {
+        closeSidebarButton.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        });
+    }
+
+    if (overlay && sidebar) {
+        overlay.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        });
+    }
+</script>
+</body>
+</html>

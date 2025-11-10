@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Évaluations - Mon Etab (Enseignant)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <style>
+        .gradient-bg-enseignant {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .slide-in {
+            animation: slideIn 0.6s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        @media (min-width: 1024px) {
+            .main-content {
+                margin-left: 16rem;
+            }
+        }
+        .tab-active {
+            background-color: #f0fdf4;
+            color: #059669;
+            font-weight: 600;
+        }
+        .tab-inactive {
+            color: #d1fae5;
+        }
+        .tab-item:hover {
+            background-color: #059669;
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .status-pending {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+        .status-completed {
+            background-color: #d1fae5;
+            color: #047857;
+        }
+        .status-overdue {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+<div th:replace="~{teacher/fragment :: sidebar(activePage='evaluations')}"></div>
+
+<div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+<div class="main-content min-h-screen">
+    <header class="gradient-bg-enseignant text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <button id="mobile-menu-button" class="lg:hidden mr-4 p-1 hover:bg-white hover:bg-opacity-20 rounded">
+                    <i data-lucide="menu" class="w-6 h-6 text-white"></i>
+                </button>
+                <div class="flex items-center space-x-4">
+                    <div class="glass-effect rounded-lg p-2">
+                        <i data-lucide="award" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">MonEtab</h1>
+                    </div>
+                </div>
+                <!-- Profil enseignant -->
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white font-bold">
+                            <span th:text="${teacher.prenom!= null ? #strings.substring(teacher.prenom, 0, 1):'X'} +' '+ ${teacher.nom!= null ? #strings.substring(teacher.nom, 0, 1):'X'}">YK</span>
+
+                        </div>
+                        <div class="hidden md:block">
+                            <p class="font-semibold">
+                                Bonjour, <span th:text="${teacher.prenom + ' ' + teacher.nom}"></span> -
+                                <span th:text="${teacher.matiere.nom}"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-6 py-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Mes Évaluations</h2>
+            <a th:href="@{/teacher/eval-form}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Nouvelle Évaluation</span>
+            </a>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden slide-in">
+            <!-- En-tête du tableau -->
+            <div class="grid grid-cols-12 bg-gray-100 px-6 py-3 font-medium text-gray-600 text-sm uppercase tracking-wider">
+                <div class="col-span-4">Titre</div>
+                <div class="col-span-2">Classe</div>
+                <div class="col-span-2">Type</div>
+                <div class="col-span-2">Date de remise</div>
+                <div class="col-span-2 text-right">Actions</div>
+            </div>
+
+            <!-- Liste des évaluations -->
+            <div class="divide-y divide-gray-200" th:if="${not #lists.isEmpty(evaluations)}">
+                <div th:each="evaluation : ${evaluations}" class="grid grid-cols-12 items-center px-6 py-4 hover:bg-gray-50 transition-colors">
+                    <div class="col-span-4 font-medium text-gray-900">
+                        <a th:href="'#'" class="hover:text-emerald-600">
+                            <span th:text="${evaluation.titre}"></span>
+                        </a>
+                        <p class="text-sm text-gray-500 mt-1 line-clamp-2" th:if="${evaluation.description}" th:text="${evaluation.description}"></p>
+                    </div>
+                    <div class="col-span-2 text-gray-600" th:text="${evaluation.classe.label}"></div>
+                    <div class="col-span-2">
+                        <span class="px-3 py-1 rounded-full text-xs font-medium" 
+                              th:class="${evaluation.typeEvaluation.name() == 'DEVOIR' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}"
+                              th:text="${evaluation.typeEvaluation.name()}">
+                        </span>
+                    </div>
+                    <div class="col-span-2 text-gray-600" th:text="${#temporals.format(evaluation.dateRemise, 'dd/MM/yyyy')}"></div>
+                    <div class="col-span-2 flex justify-end space-x-2">
+                        <a th:href="'#'" class="text-blue-600 hover:text-blue-800 p-1 rounded-full hover:bg-blue-50">
+                            <i data-lucide="eye" class="w-5 h-5"></i>
+                        </a>
+                        <a th:href="'#'" class="text-emerald-600 hover:text-emerald-800 p-1 rounded-full hover:bg-emerald-50">
+                            <i data-lucide="edit" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Message si aucune évaluation -->
+            <div th:if="${#lists.isEmpty(evaluations)}" class="p-8 text-center text-gray-500">
+                <i data-lucide="file-question" class="w-12 h-12 mx-auto text-gray-300 mb-4"></i>
+                <p class="text-lg font-medium">Aucune évaluation pour le moment</p>
+                <p class="mt-2">Créez votre première évaluation pour commencer</p>
+                <a href="/teacher/evaluations-form" class="inline-block mt-4 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg">
+                    Créer une évaluation
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    mobileMenuButton.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+    });
+</script>
+</body>
+</html>

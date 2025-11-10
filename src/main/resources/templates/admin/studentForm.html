@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter un élève - Mon Etab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #a9121a 0%, #d42a22 100%);
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        @media (min-width: 1024px) {
+            .main-content {
+                margin-left: 16rem; /* Tailwind w-64 */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+<div th:replace="~{admin/fragment :: sidebar(activePage='eleves')}"></div>
+
+<div class="main-content min-h-screen">
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <span class="text-2xl font-bold uppercase">modifier un Élève</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-right hidden sm:block">
+                    <p class="font-semibold">Dr. Adjoumane KOFFI</p>
+                    <p class="text-sm font-light">Directeur Général</p>
+                </div>
+                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-red-700 font-bold border-2 border-white">
+                    <span>AK</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto p-6 lg:p-10">
+        <div class="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Informations de l'élève</h2>
+
+            <form th:action="@{/admin/eleves/edit}" th:object="${student}" method="POST" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="nom" class="block text-sm font-medium text-gray-700">Nom</label>
+                        <input type="text" th:field="*{nom}" id="nom" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                    </div>
+                    <input type="hidden" th:field="*{id}" >
+                    <input type="hidden" th:field="*{userAccount.id}" >
+                    <div>
+                        <label for="prenom" class="block text-sm font-medium text-gray-700">Prénom</label>
+                        <input type="text" th:field="*{prenom}" id="prenom" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" th:field="*{email}" id="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="login" class="block text-sm font-medium text-gray-700">Login</label>
+                        <input type="text" th:field="*{login}" id="login" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="tel" class="block text-sm font-medium text-gray-700">Téléphone</label>
+                        <input type="tel" th:field="*{tel}" id="tel" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="birthDate" class="block text-sm font-medium text-gray-700">Date de naissance</label>
+                        <input type="date" th:field="*{birthDate}" id="birthDate" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="pays" class="block text-sm font-medium text-gray-700">Pays</label>
+                        <input type="text" th:field="*{pays}" id="pays" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="photo" class="block text-sm font-medium text-gray-700">Photo (URL)</label>
+                        <input type="text" th:field="*{photo}" id="photo" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="classEntity" class="block text-sm font-medium text-gray-700">Classe</label>
+                    <select th:field="*{classDTO.id}" id="classEntity" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                        <option value="">Sélectionner une classe</option>
+                        <option th:each="c : ${classes}" th:value="${c.id}" th:text="${c.label}"></option>
+                    </select>
+                </div>
+
+                <div class="flex justify-end space-x-4 pt-4">
+                    <a th:href="@{/admin/eleves}" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                        Annuler
+                    </a>
+                    <button type="submit" class="inline-flex justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                        Enregistrer
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    // Script pour la barre latérale (bascule sur mobile)
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const closeSidebarButton = document.getElementById('close-sidebar-button');
+    const sidebar = document.querySelector('[th\\:fragment="sidebar"]');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    if (mobileMenuButton && sidebar && overlay) {
+        mobileMenuButton.addEventListener('click', () => {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+        });
+    }
+
+    if (closeSidebarButton && sidebar && overlay) {
+        closeSidebarButton.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        });
+    }
+
+    if (overlay && sidebar) {
+        overlay.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        });
+    }
+</script>
+</body>
+</html>

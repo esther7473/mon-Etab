@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes par Classe - Mon Etab (Enseignant)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <style>
+        .gradient-bg-enseignant { background: linear-gradient(135deg, #10b981 0%, #34d399 100%); }
+        .glass-effect { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .slide-in { animation: slideIn 0.6s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .main-content { margin-left: 0; }
+        @media (min-width: 1024px) { .main-content { margin-left: 16rem; } }
+        .note-cell { min-width: 60px; text-align: center; }
+        .note-high { background-color: #dcfce7; }
+        .note-medium { background-color: #fef9c3; }
+        .note-low { background-color: #fee2e2; }
+        .note-absent { background-color: #f3f4f6; color: #9ca3af; }
+        .student-row:hover { background-color: #f9fafb; }
+        
+        /* Styles pour l'impression */
+        .print-only { display: none; }
+        .no-print { display: block; }
+        
+        @media print {
+            body { margin: 0; padding: 20px; font-size: 12px; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            .bg-white, .shadow-lg, .rounded-xl { background: white !important; box-shadow: none !important; border-radius: 0 !important; }
+            .main-content { margin-left: 0 !important; }
+            .container { max-width: none !important; margin: 0 !important; padding: 0 !important; }
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            thead { display: table-header-group; }
+            .note-cell { border: 1px solid #000 !important; }
+            .border { border-color: #000 !important; }
+            .text-green-600 { color: #059669 !important; }
+            .text-yellow-600 { color: #d97706 !important; }
+            .text-red-600 { color: #dc2626 !important; }
+            .note-high { background-color: #dcfce7 !important; }
+            .note-medium { background-color: #fef9c3 !important; }
+            .note-low { background-color: #fee2e2 !important; }
+            .note-absent { background-color: #f3f4f6 !important; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+<!-- Sidebar -->
+<div th:replace="~{teacher/fragment :: sidebar(activePage='classes')}"></div>
+<div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+<div class="main-content min-h-screen">
+    <!-- HEADER -->
+    <header class="gradient-bg-enseignant text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Menu mobile -->
+                <button id="mobile-menu-button" class="lg:hidden mr-4 p-1 hover:bg-white hover:bg-opacity-20 rounded">
+                    <i data-lucide="menu" class="w-6 h-6 text-white"></i>
+                </button>
+
+                <!-- Titre -->
+                <div class="flex items-center space-x-4">
+                    <div class="glass-effect rounded-lg p-2">
+                        <i data-lucide="clipboard-list" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold no-print">Notes par Classe</h1>
+                        <p class="text-green-100 no-print">Enseignant</p>
+                    </div>
+                </div>
+
+                <!-- Profil enseignant -->
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white font-bold">
+                            <span th:text="${teacher.prenom!= null ? #strings.substring(teacher.prenom, 0, 1):'X'} +' '+ ${teacher.nom!= null ? #strings.substring(teacher.nom, 0, 1):'X'}">YK</span>
+
+                        </div>
+                        <div class="hidden md:block">
+                            <p class="font-semibold">
+                                Bonjour, <span th:text="${teacher.prenom + ' ' + teacher.nom}"></span> -
+                                <span th:text="${teacher.matiere.nom}"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenu principal -->
+    <div class="container mx-auto px-6 py-8">
+        <!-- Formulaire de sélection de classe -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 slide-in no-print">
+            <form th:action="@{/teacher/classes}" method="get" class="flex items-end space-x-4">
+                <div class="flex-1">
+                    <label for="classe" class="block text-gray-700 text-sm font-medium mb-1">Classe</label>
+                    <select id="classe" name="classeId" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400">
+                        <option value="">Sélectionner une classe</option>
+                        <option th:each="classe : ${classes}"
+                                th:value="${classe.id}"
+                                th:text="${classe.label}"
+                                th:selected="${selectedClasse != null and selectedClasse.id == classe.id}">
+                        </option>
+                    </select>
+                </div>
+                <button type="submit" class="px-6 py-2 bg-green-500 text-white font-medium rounded-md hover:bg-green-600 transition-colors duration-200">
+                    <i data-lucide="refresh-cw" class="w-4 h-4 mr-1 inline"></i>
+                    Charger
+                </button>
+            </form>
+        </div>
+
+        <!-- Statistiques -->
+        <div th:if="${selectedClasse != null}" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 no-print">
+            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col justify-center items-center text-center">
+                <p class="text-gray-500 text-sm font-medium">Élèves total</p>
+                <p class="text-3xl font-bold text-green-600" th:text="${totalStudents}">0</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col justify-center items-center text-center">
+                <p class="text-gray-500 text-sm font-medium">Évaluations</p>
+                <p class="text-3xl font-bold text-blue-600" th:text="${totalEvaluations}">0</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col justify-center items-center text-center">
+                <p class="text-gray-500 text-sm font-medium">Moyenne classe</p>
+                <p class="text-3xl font-bold text-purple-600" th:text="${moyenneClasse != null ? moyenneClasse : 'N/A'}">N/A</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col justify-center items-center text-center">
+                <p class="text-gray-500 text-sm font-medium">Taux réussite</p>
+                <p class="text-3xl font-bold text-orange-600" th:text="${tauxReussite != null ? tauxReussite + '%' : 'N/A'}">N/A</p>
+            </div>
+        </div>
+
+        <!-- Tableau des notes -->
+        <div th:if="${selectedClasse != null and studentsNotes != null}" class="bg-white rounded-xl shadow-lg p-6 slide-in" id="notes-container">
+            <div class="flex justify-between items-center mb-6 no-print">
+                <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                    <i data-lucide="users" class="w-5 h-5 mr-2 text-green-600"></i>
+                    Notes - <span th:text="${selectedClasse.label}" class="ml-2"></span>
+                </h2>
+                <div class="flex items-center space-x-4">
+                    <button onclick="printNotes()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 flex items-center">
+                        <i data-lucide="printer" class="w-4 h-4 mr-2"></i>
+                        Imprimer
+                    </button>
+                    <div class="text-sm text-gray-600">
+                        <span th:text="${evaluations.size() + ' évaluation(s)'}"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- En-tête pour l'impression -->
+            <div class="print-only mb-6">
+                <div class="text-center mb-4">
+                    <h1 class="text-2xl font-bold">RELEVÉ DE NOTES</h1>
+                    <h2 class="text-lg" th:text="'Classe: ' + ${selectedClasse.label}"></h2>
+                    <p class="text-sm text-gray-600" th:text="'Enseignant: ' + ${teacher.prenom + ' ' + teacher.nom}"></p>
+                    <p class="text-sm text-gray-600" th:text="'Matière: ' + ${teacher.matiere.nom}"></p>
+                    <p class="text-sm text-gray-600" th:text="|Date d'impression ${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}|"></p>
+                    
+                    <!-- Statistiques sur une ligne -->
+                    <div class="flex justify-center space-x-8 mt-4 text-sm">
+                        <span class="font-medium">Élèves: <span class="font-bold" th:text="${totalStudents}">0</span></span>
+                        <span class="font-medium">Évaluations: <span class="font-bold" th:text="${totalEvaluations}">0</span></span>
+                        <span class="font-medium">Moyenne classe: <span class="font-bold" th:text="${moyenneClasse != null ? moyenneClasse : 'N/A'}">N/A</span></span>
+                        <span class="font-medium">Taux réussite: <span class="font-bold" th:text="${tauxReussite != null ? tauxReussite + '%' : 'N/A'}">N/A</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full border border-gray-200">
+                    <thead class="bg-gray-50">
+                    <tr>
+                        <th class="border border-gray-300 px-4 py-3 text-left font-medium text-gray-700 sticky left-0 bg-white z-10">
+                            Élève
+                        </th>
+                        <th th:each="eval : ${evaluations}"
+                            class="border border-gray-300 px-3 py-2 text-center font-medium text-gray-700"
+                            th:title="${eval.titre + ' - ' + #temporals.format(eval.dateRemise, 'dd/MM/yyyy')}">
+                            <div class="text-xs font-semibold" th:text="${eval.titre}"></div>
+                            <div class="text-xs text-gray-500" th:text="${#temporals.format(eval.dateRemise, 'dd/MM')}"></div>
+                        </th>
+                        <th class="border border-gray-300 px-4 py-3 text-center font-medium text-gray-700">
+                            Moyenne
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="studentNote : ${studentsNotes}" class="student-row">
+                        <!-- Colonne Élève -->
+                        <td class="border border-gray-300 px-4 py-3 sticky left-0 bg-white z-10">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center font-bold text-sm text-gray-700 mr-3"
+                                     th:text="${#strings.substring(studentNote.student.prenom,0,1) + #strings.substring(studentNote.student.nom,0,1)}">
+                                </div>
+                                <div>
+                                    <div class="font-medium" th:text="${studentNote.student.prenom + ' ' + studentNote.student.nom}"></div>
+                                    <div class="text-xs text-gray-500" th:text="${studentNote.student.matricule}"></div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Notes par évaluation -->
+                        <td th:each="eval : ${evaluations}" class="border border-gray-300 px-3 py-2 text-center">
+                            <th:block th:each="note : ${studentNote.notes}">
+                                <span th:if="${note.evaluation != null and note.evaluation.id == eval.id}"
+                                      th:class="'note-cell font-bold rounded px-2 py-1 text-sm ' + (${note.valeur == null} ? 'note-absent' : (${note.valeur >= 16} ? 'note-high' : (${note.valeur >= 10} ? 'note-medium' : 'note-low')))"
+                                      th:text="${note.valeur != null} ? ${#numbers.formatDecimal(note.valeur, 1, 2)} : 'ABS'">
+                                </span>
+                            </th:block>
+                            <span th:if="${studentNote.notes == null or studentNote.notes.isEmpty()}"
+                                  class="text-gray-400 text-sm">-</span>
+                        </td>
+
+                        <!-- Moyenne de l'élève -->
+                        <td class="border border-gray-300 px-4 py-3 text-center font-bold">
+                                <span th:if="${studentNote.moyenne != null}"
+                                      th:class="${studentNote.moyenne >= 16} ? 'text-green-600' : (${studentNote.moyenne >= 10} ? 'text-yellow-600' : 'text-red-600')"
+                                      th:text="${#numbers.formatDecimal(studentNote.moyenne, 1, 2)}">
+                                </span>
+                            <span th:if="${studentNote.moyenne == null}" class="text-gray-400">-</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Légende -->
+            <div class="mt-6 flex flex-wrap items-center justify-start gap-4 text-sm">
+                <div class="flex items-center">
+                    <div class="w-4 h-4 bg-green-100 border border-green-300 mr-2"></div>
+                    <span>≥ 16/20</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-4 h-4 bg-yellow-100 border border-yellow-300 mr-2"></div>
+                    <span>10-15.9/20</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-4 h-4 bg-red-100 border border-red-300 mr-2"></div>
+                    <span>&lt; 10/20</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-4 h-4 bg-gray-100 border border-gray-300 mr-2"></div>
+                    <span>Absent</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message si aucune classe sélectionnée -->
+        <div th:if="${selectedClasse == null}" class="bg-white rounded-xl shadow-lg p-6 text-center">
+            <i data-lucide="clipboard-list" class="w-16 h-16 text-gray-400 mx-auto mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-700 mb-2">Sélectionnez une classe</h3>
+            <p class="text-gray-500">Veuillez choisir une classe pour afficher les notes des élèves.</p>
+        </div>
+
+        <!-- Message si aucune donnée -->
+        <div th:if="${selectedClasse != null and (studentsNotes == null or studentsNotes.isEmpty())}" class="bg-white rounded-xl shadow-lg p-6 text-center">
+            <i data-lucide="file-search" class="w-16 h-16 text-gray-400 mx-auto mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-700 mb-2">Aucune note disponible</h3>
+            <p class="text-gray-500">Aucune note n'a été saisie pour cette classe.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    mobileMenuButton.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+    });
+
+    // Fonction d'impression des notes
+    function printNotes() {
+        // Sauvegarder le titre original
+        const originalTitle = document.title;
+        
+        // Changer le titre pour l'impression
+        const classe = document.querySelector('[th\\:text*="selectedClasse.label"]')?.textContent || 'Classe';
+        document.title = `Relevé de notes - ${classe}`;
+        
+        // Masquer temporairement les éléments non nécessaires
+        const elementsToHide = document.querySelectorAll('.no-print, #sidebar, #sidebar-overlay');
+        elementsToHide.forEach(el => el.style.display = 'none');
+        
+        // Afficher les éléments spécifiques à l'impression
+        const printElements = document.querySelectorAll('.print-only');
+        printElements.forEach(el => el.style.display = 'block');
+        
+        // Attendre un court délai pour que les styles s'appliquent
+        setTimeout(() => {
+            // Lancer l'impression
+            window.print();
+            
+            // Restaurer l'affichage après l'impression
+            setTimeout(() => {
+                elementsToHide.forEach(el => el.style.display = '');
+                printElements.forEach(el => el.style.display = 'none');
+                document.title = originalTitle;
+            }, 100);
+        }, 100);
+    }
+
+    // Raccourci clavier Ctrl+P pour imprimer
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'p') {
+            e.preventDefault();
+            if (document.getElementById('notes-container')) {
+                printNotes();
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

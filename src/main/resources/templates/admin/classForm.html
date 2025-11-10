@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${classe.id} ? 'Modifier la Classe' : 'Ajouter une Classe'">Gestion des Classes - Mon Etab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #a9121a 0%, #d42a22 100%);
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        @media (min-width: 1024px) {
+            .main-content {
+                margin-left: 16rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+<div th:replace="~{admin/fragment :: sidebar(activePage='classes')}"></div>
+
+<div class="main-content min-h-screen">
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <a th:href="@{/admin/classes}" class="text-white hover:text-gray-200">
+                    <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                </a>
+                <h1 class="text-2xl font-bold" th:text="${classe.id} ? 'Modifier la classe' : 'Ajouter une classe'">
+                    Gestion des Classes
+                </h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-right hidden sm:block">
+                    <p class="font-semibold">Dr. Adjoumane KOFFI</p>
+                    <p class="text-sm font-light">Directeur Général</p>
+                </div>
+                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-red-700 font-bold border-2 border-white">
+                    <span>AK</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto p-6 lg:p-10">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <form th:action="@{/admin/classes/save}"
+                  th:object="${classe}" 
+                  method="post" 
+                  class="space-y-6">
+                
+                <input type="hidden" th:field="*{id}">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Libellé -->
+                    <div class="space-y-2">
+                        <label for="label" class="block text-sm font-medium text-gray-700">Libellé *</label>
+                        <input type="text" id="label" th:field="*{label}" 
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                               required
+                               placeholder="Ex: 6ème A, Terminale C">
+                        <p class="mt-1 text-sm text-red-600" th:if="${#fields.hasErrors('label')}" 
+                           th:errors="*{label}"></p>
+                    </div>
+
+                    <!-- Effectif Maximum -->
+                    <div class="space-y-2">
+                        <label for="maxStudent" class="block text-sm font-medium text-gray-700">
+                            Effectif maximum *
+                        </label>
+                        <input type="number" 
+                               id="maxStudent" 
+                               th:field="*{maxStudent}" 
+                               min="1"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                               required
+                               placeholder="Ex: 30">
+                        <p class="mt-1 text-sm text-gray-500">Nombre maximum d'élèves dans la classe</p>
+                        <p class="mt-1 text-sm text-red-600" th:if="${#fields.hasErrors('maxStudent')}" 
+                           th:errors="*{maxStudent}"></p>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                    <a th:href="@{/admin/classes}" 
+                       class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                        Annuler
+                    </a>
+                    <button type="submit" 
+                            class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                        <i data-lucide="save" class="mr-2 w-4 h-4"></i>
+                        <span th:text="${classe.id} ? 'Mettre à jour' : 'Enregistrer'"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    // Script pour la barre latérale (bascule sur mobile)
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const closeSidebarButton = document.getElementById('close-sidebar-button');
+    const sidebar = document.querySelector('[th\\:fragment="sidebar"]');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    if (mobileMenuButton && sidebar && overlay) {
+        mobileMenuButton.addEventListener('click', () => {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+        });
+    }
+
+    if (closeSidebarButton && sidebar && overlay) {
+        closeSidebarButton.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        });
+    }
+
+    if (overlay && sidebar) {
+        overlay.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        });
+    }
+</script>
+</body>
+</html>

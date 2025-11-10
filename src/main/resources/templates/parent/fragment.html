@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+    <!-- Sidebar -->
+    <div th:fragment="sidebar(activePage)" class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+        <div class="px-4 py-6">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-pink-600 rounded-lg flex items-center justify-center">
+                        <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800">Mon Etab</h2>
+                        <p class="text-sm text-gray-500">Espace Prent</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav>
+                <ul class="space-y-2">
+                    <li>
+                        <a th:href="@{/parent/}"
+                           th:classappend="${activePage == 'dashboard'} ? 'text-white bg-gradient-to-r from-blue-500 to-purple-600' : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50'"
+                           class="flex items-center space-x-3 rounded-lg px-4 py-3 transition-all duration-200">
+                            <i data-lucide="home" class="w-5 h-5"></i>
+                            <span>Tableau de bord</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/parent/}"
+                           th:classappend="${activePage == ''} ? 'text-white bg-gradient-to-r from-blue-500 to-purple-600' : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50'"
+                           class="flex items-center space-x-3 rounded-lg px-4 py-3 transition-all duration-200">
+                            <i data-lucide="users" class="w-5 h-5 mr-3"></i>
+                            Mes enfants
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/parent/rdv}"
+                           th:classappend="${activePage == 'rdv'} ? 'text-white bg-gradient-to-r from-blue-500 to-purple-600' : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50'"
+                           class="flex items-center space-x-3 rounded-lg px-4 py-3 transition-all duration-200">
+                            <i data-lucide="calendar" class="w-5 h-5 mr-3"></i>
+                            Rendez-vous
+                        </a>
+                    </li>
+
+                    <li>
+                        <a th:href="@{/parent/messagerie}"
+                           th:classappend="${activePage == 'messagerie'} ? 'text-white bg-gradient-to-r from-blue-500 to-purple-600' : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50'"
+                           class="flex items-center space-x-3 rounded-lg px-4 py-3 transition-all duration-200">
+                            <i data-lucide="message-circle" class="w-5 h-5 mr-3"></i>
+                            Messagerie
+                        </a>
+                    </li>
+
+
+                </ul>
+            </nav>
+            <div class="border-t border-gray-200 p-4 space-y-2">
+                <a th:href="@{/logout}"
+                   class="flex items-center space-x-3 text-red-600 hover:bg-red-50 rounded-lg px-4 py-3 transition-all duration-200">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                    <span class="font-medium">Déconnexion</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+</html>

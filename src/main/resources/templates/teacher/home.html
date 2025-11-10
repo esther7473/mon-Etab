@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Mon Etab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .glass-effect { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2);}
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .slide-in { animation: slideIn 0.6s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .main-content { margin-left: 0; }
+        @media (min-width: 1024px) { .main-content { margin-left: 16rem; } }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+<!-- Sidebar fragment adapté pour Teacher -->
+<div th:replace="~{teacher/fragment :: sidebar(activePage='dashboard')}"></div>
+
+<div class="main-content min-h-screen">
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+            <button id="mobile-menu-button" class="lg:hidden mr-4 p-1 hover:bg-white hover:bg-opacity-20 rounded">
+                <i data-lucide="menu" class="w-6 h-6 text-white"></i>
+            </button>
+            <div class="flex items-center space-x-4">
+                <div class="glass-effect rounded-lg p-2">
+                    <i data-lucide="user-check" class="w-8 h-8"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold">Mon Etab</h1>
+                    <p class="text-blue-100">Espace Enseignant</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <i data-lucide="bell" class="w-6 h-6 cursor-pointer"></i>
+                    <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">
+                        <span>JD</span>
+                    </div>
+                    <div class="hidden md:block">
+                        <p class="font-semibold" th:text="${teacher.nom} + ' ' + ${teacher.prenom}">KOFFI Jean</p>
+                        <p class="text-blue-100 text-sm">Enseignant</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-6 py-8">
+        <div class="slide-in mb-8">
+            <div class="glass-effect rounded-2xl p-6 gradient-bg text-white">
+                <h2 class="text-3xl font-bold mb-2">
+                    Bonjour <span th:text="${teacher.prenom}">Jean</span> ! 👋
+                </h2>
+                <p class="text-blue-100">
+                    Nous sommes le
+                    <span th:text="${#temporals.format(T(java.time.LocalDateTime).now(), 'EEEE dd MMMM yyyy')}">
+                        jeudi 28 août 2025
+                    </span>.
+                    Voici un résumé de votre journée.
+                </p>
+            </div>
+        </div>
+
+        <!-- Statistiques enseignant -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6 card-hover slide-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Classes enseignées</p>
+                        <p class="text-3xl font-bold text-green-600" th:text="${classesNumber}">4</p>
+                    </div>
+                    <div class="bg-green-100 rounded-full p-3">
+                        <i data-lucide="layers" class="w-6 h-6 text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 card-hover slide-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Nombre d'élèves</p>
+                        <p class="text-3xl font-bold text-orange-600" th:text="${studentsNumber}">120</p>
+                    </div>
+                    <div class="bg-orange-100 rounded-full p-3">
+                        <i data-lucide="users" class="w-6 h-6 text-orange-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 card-hover slide-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Évaluations prévues</p>
+                        <p class="text-3xl font-bold text-blue-600" th:text="${evaluationNumber}">5</p>
+                    </div>
+                    <div class="bg-blue-100 rounded-full p-3">
+                        <i data-lucide="clipboard" class="w-6 h-6 text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 card-hover slide-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Messages non lus</p>
+                        <p class="text-3xl font-bold text-purple-600">3</p>
+                    </div>
+                    <div class="bg-purple-100 rounded-full p-3">
+                        <i data-lucide="mail" class="w-6 h-6 text-purple-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emploi du temps -->
+        <div class="bg-white rounded-xl shadow-lg p-6 slide-in mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                    <i data-lucide="clock" class="w-5 h-5 mr-2 text-blue-600"></i>
+                    Mon emploi du temps - Aujourd'hui
+                </h3>
+                <a th:href="@{/teacher/emploi-du-temps}" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Voir tout</a>
+            </div>
+            <div class="space-y-3">
+                <div class="border-l-4 border-green-500 bg-green-50 rounded-lg p-4 transition-colors hover:shadow-md">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div><i data-lucide="play-circle" class="w-4 h-4 text-green-600"></i></div>
+                            <div>
+                                <p class="font-semibold text-gray-800">Mathématiques</p>
+                                <p class="text-sm text-gray-600">
+                                    <span>6ème A</span> • Salle <span>A101</span>
+                                </p>
+                            </div>
+                        </div>
+                        <span class="text-sm font-medium text-gray-700">08:00-09:00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages récents -->
+        <div class="bg-white rounded-xl shadow-lg p-6 slide-in">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <i data-lucide="message-circle" class="w-5 h-5 mr-2 text-indigo-600"></i>
+                Messages récents
+            </h3>
+            <div class="space-y-3">
+                <div class="p-3 border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <div>
+                                <p class="font-semibold text-gray-800 text-sm">Mme Diallo</p>
+                                <p class="text-xs text-gray-600 truncate max-w-32">Rendez-vous après les cours</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-gray-500">27/08</span>
+                    </div>
+                </div>
+            </div>
+            <a th:href="@{/teacher/messagerie}" class="block text-center text-blue-600 hover:text-blue-700 text-sm font-medium mt-4">Voir tous les messages</a>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    if (mobileMenuButton && sidebar && overlay) {
+        mobileMenuButton.addEventListener('click', () => {
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        });
+    }
+</script>
+
+</body>
+</html>

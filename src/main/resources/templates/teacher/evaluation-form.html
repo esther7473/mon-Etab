@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter une évaluation - Mon Etab (Enseignant)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <style>
+        .gradient-bg-enseignant {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .slide-in {
+            animation: slideIn 0.6s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        @media (min-width: 1024px) {
+            .main-content {
+                margin-left: 16rem;
+            }
+        }
+        .tab-active {
+            background-color: #f0fdf4;
+            color: #059669;
+            font-weight: 600;
+        }
+        .tab-inactive {
+            color: #d1fae5;
+        }
+        .tab-item:hover {
+            background-color: #059669;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+<div th:replace="~{teacher/fragment :: sidebar(activePage='evaluations')}"></div>
+
+<div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+<div class="main-content min-h-screen">
+    <header class="gradient-bg-enseignant text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <button id="mobile-menu-button" class="lg:hidden mr-4 p-1 hover:bg-white hover:bg-opacity-20 rounded">
+                    <i data-lucide="menu" class="w-6 h-6 text-white"></i>
+                </button>
+                <div class="flex items-center space-x-4">
+                    <div class="glass-effect rounded-lg p-2">
+                        <i data-lucide="award" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">MonEtab</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white font-bold">
+                            <span th:text="${teacher.prenom!= null ? #strings.substring(teacher.prenom, 0, 1):'X'} +' '+ ${teacher.nom!= null ? #strings.substring(teacher.nom, 0, 1):'X'}">YK</span>
+
+                        </div>
+                        <div class="hidden md:block">
+                            <p class="font-semibold">
+                                Bonjour, <span th:text="${teacher.prenom + ' ' + teacher.nom}"></span> -
+                                <span th:text="${teacher.matiere.nom}"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-6 py-8">
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6 slide-in">
+
+            <div class="flex items-center space-x-2 mb-6">
+                <i data-lucide="file-plus" class="w-6 h-6 text-gray-600"></i>
+                <h2 class="text-xl font-bold text-gray-800">Ajouter une nouvelle évaluation</h2>
+            </div>
+
+            <form action="#" th:action="@{/teacher/addEval}" method="post" th:object="${evaluationDTO}">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="col-span-1">
+                        <label for="titre" class="block text-sm font-medium text-gray-700">Titre</label>
+                        <input type="text" id="titre" th:field="*{titre}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" required>
+                        <small class="text-red-500" th:if="${#fields.hasErrors('titre')}" th:errors="*{titre}"></small>
+                    </div>
+
+                    <div class="col-span-1">
+                        <label for="dateRemise" class="block text-sm font-medium text-gray-700">Date de remise</label>
+                        <input type="date" id="dateRemise" th:field="*{dateRemise}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" required>
+                    </div>
+
+                    <input type="hidden" th:field="*{enseignant.id}" />
+                    <div class="col-span-1">
+                        <label for="classe" class="block text-sm font-medium text-gray-700">Classe</label>
+                        <select id="classe" th:field="*{classe.id}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" required>
+                            <option value="">Sélectionner une classe</option>
+                            <option th:each="classe : ${classes}"
+                                    th:value="${classe.id}"
+                                    th:text="${classe.label}">Nom de la classe</option>
+                        </select>
+                        <small class="text-red-500" th:if="${#fields.hasErrors('classe')}" th:errors="*{classe}"></small>
+                    </div>
+
+                    <div class="col-span-1">
+                        <label for="typeEvaluation" class="block text-sm font-medium text-gray-700">Type d'évaluation</label>
+                        <select id="typeEvaluation" th:field="*{typeEvaluation}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" required>
+                            <option value="">Sélectionner un type</option>
+                            <option th:each="type : ${T(ci.ada.monetabv2new.models.enumeration.TypeEvaluation).values()}"
+                                    th:value="${type}"
+                                    th:text="${#strings.capitalize(type.name().toLowerCase())}">Type d'évaluation</option>
+                        </select>
+                        <small class="text-red-500" th:if="${#fields.hasErrors('typeEvaluation')}" th:errors="*{typeEvaluation}"></small>
+                    </div>
+
+                    <div class="col-span-full">
+                        <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea id="description" rows="4" th:field="*{description}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end space-x-4">
+                    <button type="button" onclick="history.back()" class="flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <i data-lucide="chevron-left" class="w-4 h-4 mr-2"></i>
+                        Annuler
+                    </button>
+                    <button type="submit" class="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        <i data-lucide="save" class="w-4 h-4 mr-2"></i>
+                        Enregistrer l'évaluation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    mobileMenuButton.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+    });
+</script>
+</body>
+</html>
